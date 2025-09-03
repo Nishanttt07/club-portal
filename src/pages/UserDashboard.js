@@ -25,19 +25,18 @@ export default function UserDashboard() {
   }, [navigate]);
 
   const fetchEvents = async () => {
-    let { data } = await supabase
-      .from("events")
-      .select("*")
-      .order("date", { ascending: false });
+    let { data } = await supabase.from("events").select("*").order("date", { ascending: false });
     setEvents(data || []);
   };
 
   const fetchAnnouncements = async () => {
-    let { data } = await supabase
-      .from("announcements")
-      .select("*")
-      .order("created_at", { ascending: false });
+    let { data } = await supabase.from("announcements").select("*").order("created_at", { ascending: false });
     setAnnouncements(data || []);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/login");
   };
 
   return (
@@ -46,19 +45,20 @@ export default function UserDashboard() {
         <h1>ClubHub Feed</h1>
         <div className="user-controls">
           <span className="welcome-text">Hi, {user?.email}</span>
+          {/* <button className="logout-btn" onClick={handleLogout}>Logout</button> */}
         </div>
       </div>
 
       {/* Tabs */}
       <div className="tabs">
-        <button
-          className={`tab-btn ${activeTab === "events" ? "active" : ""}`}
+        <button 
+          className={`tab-btn ${activeTab === "events" ? "active" : ""}`} 
           onClick={() => setActiveTab("events")}
         >
           Events
         </button>
-        <button
-          className={`tab-btn ${activeTab === "announcements" ? "active" : ""}`}
+        <button 
+          className={`tab-btn ${activeTab === "announcements" ? "active" : ""}`} 
           onClick={() => setActiveTab("announcements")}
         >
           Announcements
@@ -79,11 +79,7 @@ export default function UserDashboard() {
         {activeTab === "announcements" &&
           (announcements.length > 0 ? (
             announcements.map((a) => (
-              <AnnouncementPost
-                key={a.id}
-                announcement={a}
-                userId={user?.id}
-              />
+              <AnnouncementPost key={a.id} announcement={a} userId={user?.id} />
             ))
           ) : (
             <p className="no-data">No announcements yet.</p>
@@ -97,11 +93,9 @@ export default function UserDashboard() {
 function EventPost({ event, userId }) {
   const [likes, setLikes] = useState(0);
   const [userLiked, setUserLiked] = useState(false);
-  const [isMember, setIsMember] = useState(false);
 
   useEffect(() => {
     fetchLikes();
-    checkMembership();
   }, [event.id, userId]);
 
   const fetchLikes = async () => {
@@ -122,89 +116,36 @@ function EventPost({ event, userId }) {
     }
   };
 
-  const checkMembership = async () => {
-    if (!userId || !event.club_id) return;
-    const { data } = await supabase
-      .from("memberships")
-      .select("id")
-      .eq("club_id", event.club_id)
-      .eq("user_id", userId)
-      .maybeSingle();
-    setIsMember(!!data);
-  };
-
   const handleLike = async () => {
     if (!userId) return;
     if (userLiked) {
-      await supabase
-        .from("event_likes")
-        .delete()
-        .eq("event_id", event.id)
-        .eq("user_id", userId);
+      await supabase.from("event_likes").delete().eq("event_id", event.id).eq("user_id", userId);
       setUserLiked(false);
       setLikes(likes - 1);
     } else {
-      await supabase
-        .from("event_likes")
-        .insert([{ event_id: event.id, user_id: userId }]);
+      await supabase.from("event_likes").insert([{ event_id: event.id, user_id: userId }]);
       setUserLiked(true);
       setLikes(likes + 1);
     }
   };
 
-  const handleMembership = async () => {
-    if (!userId || !event.club_id) return;
-    if (isMember) {
-      await supabase
-        .from("memberships")
-        .delete()
-        .eq("club_id", event.club_id)
-        .eq("user_id", userId);
-      setIsMember(false);
-    } else {
-      await supabase
-        .from("memberships")
-        .insert([{ club_id: event.club_id, user_id: userId }]);
-      setIsMember(true);
-    }
-  };
-
   return (
     <div className="post-card">
-      {event.image_url && (
-        <img src={event.image_url} alt={event.title} className="post-image" />
-      )}
+      {event.image_url && <img src={event.image_url} alt={event.title} className="post-image" />}
       <div className="post-content">
         <h3 className="post-title">{event.title}</h3>
         <p className="post-description">{event.description}</p>
         <div className="post-meta">
-          <span>
-            {new Date(event.date).toLocaleDateString()} • {event.time}
-          </span>
+          <span>{new Date(event.date).toLocaleDateString()} • {event.time}</span>
           <span>{event.venue}</span>
-          {event.entry_fee && (
-            <span>
-              Entry: {event.entry_fee > 0 ? `$${event.entry_fee}` : "Free"}
-            </span>
-          )}
+          {event.entry_fee && <span>Entry: {event.entry_fee > 0 ? `$${event.entry_fee}` : "Free"}</span>}
           {event.prize_pool && <span>Prize: {event.prize_pool}</span>}
         </div>
         <div className="post-actions">
-          <button
-            className={`like-btn ${userLiked ? "liked" : ""}`}
-            onClick={handleLike}
-          >
+          <button className={`like-btn ${userLiked ? "liked" : ""}`} onClick={handleLike}>
             {userLiked ? "❤️" : "🤍"} {likes}
           </button>
         </div>
-        {/* Membership Button */}
-        {event.club_id && (
-          <div className="membership-btn-container">
-            <button className="membership-btn" onClick={handleMembership}>
-              {isMember ? "✅ Member" : "➕ Join Club"}
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -214,11 +155,9 @@ function EventPost({ event, userId }) {
 function AnnouncementPost({ announcement, userId }) {
   const [likes, setLikes] = useState(0);
   const [userLiked, setUserLiked] = useState(false);
-  const [isMember, setIsMember] = useState(false);
 
   useEffect(() => {
     fetchLikes();
-    checkMembership();
   }, [announcement.id, userId]);
 
   const fetchLikes = async () => {
@@ -239,91 +178,35 @@ function AnnouncementPost({ announcement, userId }) {
     }
   };
 
-  const checkMembership = async () => {
-    if (!userId || !announcement.club_id) return;
-    const { data } = await supabase
-      .from("memberships")
-      .select("id")
-      .eq("club_id", announcement.club_id)
-      .eq("user_id", userId)
-      .maybeSingle();
-    setIsMember(!!data);
-  };
-
   const handleLike = async () => {
     if (!userId) return;
     if (userLiked) {
-      await supabase
-        .from("announcement_likes")
-        .delete()
-        .eq("announcement_id", announcement.id)
-        .eq("user_id", userId);
+      await supabase.from("announcement_likes").delete().eq("announcement_id", announcement.id).eq("user_id", userId);
       setUserLiked(false);
       setLikes(likes - 1);
     } else {
-      await supabase
-        .from("announcement_likes")
-        .insert([{ announcement_id: announcement.id, user_id: userId }]);
+      await supabase.from("announcement_likes").insert([{ announcement_id: announcement.id, user_id: userId }]);
       setUserLiked(true);
       setLikes(likes + 1);
     }
   };
 
-  const handleMembership = async () => {
-    if (!userId || !announcement.club_id) return;
-    if (isMember) {
-      await supabase
-        .from("memberships")
-        .delete()
-        .eq("club_id", announcement.club_id)
-        .eq("user_id", userId);
-      setIsMember(false);
-    } else {
-      await supabase
-        .from("memberships")
-        .insert([{ club_id: announcement.club_id, user_id: userId }]);
-      setIsMember(true);
-    }
-  };
-
   return (
     <div className="post-card">
-      {announcement.image_url && (
-        <img
-          src={announcement.image_url}
-          alt={announcement.title}
-          className="post-image"
-        />
-      )}
+      {announcement.image_url && <img src={announcement.image_url} alt={announcement.title} className="post-image" />}
       <div className="post-content">
         <h3 className="post-title">{announcement.title}</h3>
         <p className="post-description">{announcement.message}</p>
         {announcement.link && (
-          <a
-            href={announcement.link}
-            target="_blank"
-            rel="noreferrer"
-            className="post-link"
-          >
+          <a href={announcement.link} target="_blank" rel="noreferrer" className="post-link">
             Learn more
           </a>
         )}
         <div className="post-actions">
-          <button
-            className={`like-btn ${userLiked ? "liked" : ""}`}
-            onClick={handleLike}
-          >
+          <button className={`like-btn ${userLiked ? "liked" : ""}`} onClick={handleLike}>
             {userLiked ? "❤️" : "🤍"} {likes}
           </button>
         </div>
-        {/* Membership Button */}
-        {announcement.club_id && (
-          <div className="membership-btn-container">
-            <button className="membership-btn" onClick={handleMembership}>
-              {isMember ? "✅ Member" : "➕ Join Club"}
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
