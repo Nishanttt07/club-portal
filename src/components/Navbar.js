@@ -7,6 +7,7 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Fetch current user on mount
     const getUser = async () => {
       const {
         data: { user },
@@ -14,12 +15,23 @@ export default function Navbar() {
       setUser(user);
     };
     getUser();
+
+    // Listen to auth state changes (login / logout)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Cleanup subscription when component unmounts
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setUser(null);
-    navigate("/login");
+    navigate("/login"); // redirect after logout
   };
 
   return (
@@ -28,7 +40,7 @@ export default function Navbar() {
         padding: "10px 20px",
         background: "#f5f5f5",
         display: "flex",
-        justifyContent: "flex-end", // aligns items to the right
+        justifyContent: "flex-end",
         alignItems: "center",
       }}
     >
