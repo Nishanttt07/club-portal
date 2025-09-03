@@ -28,7 +28,7 @@ export default function Navbar() {
         padding: "10px 20px",
         background: "#f5f5f5",
         display: "flex",
-        justifyContent: "center",
+        justifyContent: "flex-end", // aligns items to the right
         alignItems: "center",
       }}
     >
