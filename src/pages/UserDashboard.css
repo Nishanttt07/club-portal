@@ -355,3 +355,23 @@ a:focus-visible {
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+.membership-btn-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.membership-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.membership-btn:hover {
+  background: #0056b3;
+}
