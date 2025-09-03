@@ -59,7 +59,7 @@ export default function Navbar() {
       </div>
 
       <div>
-        {!user ? (
+        {/* {!user ? (
           <Link to="/login">Login</Link>
         ) : (
           <button
@@ -72,10 +72,11 @@ export default function Navbar() {
               borderRadius: "4px",
               cursor: "pointer",
             }}
-          >
+          > */}
+          <button>
             Logout
           </button>
-        )}
+        {/* )} */}
       </div>
     </nav>
   );
