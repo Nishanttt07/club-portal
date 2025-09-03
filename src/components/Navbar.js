@@ -44,7 +44,7 @@ export default function Navbar() {
         alignItems: "center",
       }}
     >
-      <div>
+      {/* <div>
         {/* <Link to="/" style={{ marginRight: "15px" }}>
           Home
         </Link> */}
@@ -56,7 +56,7 @@ export default function Navbar() {
             Dashboard
           </Link>
         )}
-      </div>
+      </div> */}
 
       <div>
         {/* {!user ? (
