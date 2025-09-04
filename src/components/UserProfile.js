@@ -12,16 +12,15 @@ export default function UserProfile() {
 
   useEffect(() => {
     const fetchUserAndData = async () => {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+      // ✅ Use getSession instead of getUser
+      const { data, error: sessionError } = await supabase.auth.getSession();
 
-      if (userError || !user) {
+      if (sessionError || !data.session) {
         navigate("/login");
         return;
       }
 
+      const user = data.session.user;
       setUser(user);
 
       try {
