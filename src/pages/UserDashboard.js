@@ -371,12 +371,15 @@ function AIAssistant({ events, announcements }) {
       const context = `Events:\n${eventsContext}\n\nAnnouncements:\n${announcementsContext}`;
       
       // Call OpenAI API
-      const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer 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`
-        },
+   const OPENAI_KEY = process.env.REACT_APP_OPENAI_KEY;
+
+const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${OPENAI_KEY}`
+  },
+
         body: JSON.stringify({
           model: "gpt-3.5-turbo",
           messages: [

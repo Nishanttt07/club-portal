@@ -11,6 +11,7 @@
   --success: #42b883;
   --shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   --shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.15);
+  --instagram-gradient: linear-gradient(45deg, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
 }
 
 * {
@@ -60,7 +61,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: var(--card-bg);
+  background-color: rgba(255, 255, 255, 0.95);
   border-bottom: 1px solid var(--border);
   padding: 12px 0;
   margin-bottom: 20px;
@@ -79,7 +80,9 @@ body {
 .app-logo {
   font-size: 24px;
   font-weight: 700;
-  color: var(--text-primary);
+  background: var(--instagram-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   cursor: pointer;
 }
 
@@ -98,6 +101,7 @@ body {
   cursor: pointer;
   border-radius: 8px;
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .nav-tab:hover {
@@ -107,6 +111,23 @@ body {
 .nav-tab.active {
   color: var(--text-primary);
   font-weight: 600;
+}
+
+.nav-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 16px;
+  right: 16px;
+  height: 2px;
+  background: var(--instagram-gradient);
+  border-radius: 2px;
+  animation: tabUnderline 0.3s ease-out;
+}
+
+@keyframes tabUnderline {
+  from { width: 0; left: 50%; }
+  to { width: calc(100% - 32px); left: 16px; }
 }
 
 .header-right {
@@ -126,11 +147,13 @@ body {
   justify-content: center;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid transparent;
 }
 
 .user-avatar:hover {
   transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Button Styles */
@@ -145,6 +168,25 @@ body {
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.clubs-explorer-btn::before,
+.ai-assistant-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: 0.5s;
+}
+
+.clubs-explorer-btn:hover::before,
+.ai-assistant-btn:hover::before {
+  left: 100%;
 }
 
 .clubs-explorer-btn:hover,
@@ -173,6 +215,23 @@ body {
   box-shadow: var(--shadow);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   animation: fadeIn 0.5s ease-out;
+  position: relative;
+}
+
+.feed-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--instagram-gradient);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.feed-item:hover::before {
+  opacity: 1;
 }
 
 .feed-item:hover {
@@ -200,6 +259,13 @@ body {
 .club-name {
   font-weight: 600;
   color: var(--text-primary);
+  position: relative;
+}
+
+.club-name::after {
+  content: '•';
+  margin-left: 10px;
+  color: var(--text-secondary);
 }
 
 .post-time {
@@ -210,6 +276,7 @@ body {
 .feed-image {
   width: 100%;
   overflow: hidden;
+  position: relative;
 }
 
 .feed-image img {
@@ -247,6 +314,13 @@ body {
   align-items: center;
   font-size: 14px;
   color: var(--text-secondary);
+  position: relative;
+}
+
+.detail:not(:last-child)::after {
+  content: '•';
+  margin-left: 10px;
+  color: var(--text-secondary);
 }
 
 .event-stats {
@@ -259,6 +333,9 @@ body {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
+  padding: 4px 8px;
+  background-color: rgba(0, 149, 246, 0.1);
+  border-radius: 4px;
 }
 
 .event-description,
@@ -277,6 +354,11 @@ body {
   font-weight: 500;
   cursor: pointer;
   margin-left: 5px;
+  transition: color 0.2s ease;
+}
+
+.read-more:hover {
+  color: var(--accent-hover);
 }
 
 .registration-btn,
@@ -289,12 +371,68 @@ body {
   text-decoration: none;
   font-weight: 500;
   transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.registration-btn::before,
+.announcement-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: 0.5s;
+}
+
+.registration-btn:hover::before,
+.announcement-link:hover::before {
+  left: 100%;
 }
 
 .registration-btn:hover,
 .announcement-link:hover {
   background-color: var(--accent-hover);
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 149, 246, 0.3);
+}
+
+/* Interactive Elements */
+.interactive-bar {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.like-btn,
+.comment-btn,
+.share-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 15px;
+  transition: transform 0.2s ease;
+}
+
+.like-btn:hover,
+.comment-btn:hover,
+.share-btn:hover {
+  transform: scale(1.1);
+}
+
+.like-btn.liked {
+  color: var(--error);
+  animation: heartBeat 0.5s ease;
+}
+
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.2); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1); }
 }
 
 /* Profile Section */
@@ -324,13 +462,36 @@ body {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background-color: var(--accent);
+  background: var(--instagram-gradient);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 32px;
   font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-avatar::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(30deg);
+  transition: all 0.5s ease;
+}
+
+.profile-avatar:hover::after {
+  animation: shine 1.5s forwards;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%) rotate(30deg); }
+  100% { transform: translateX(100%) rotate(30deg); }
 }
 
 .profile-info {
@@ -402,13 +563,8 @@ body {
   left: 0;
   width: 100%;
   height: 2px;
-  background-color: var(--text-primary);
+  background: var(--instagram-gradient);
   animation: tabUnderline 0.3s ease-out;
-}
-
-@keyframes tabUnderline {
-  from { width: 0; }
-  to { width: 100%; }
 }
 
 .clubs-grid {
@@ -424,6 +580,23 @@ body {
   box-shadow: var(--shadow);
   transition: all 0.3s ease;
   cursor: pointer;
+  position: relative;
+}
+
+.club-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--instagram-gradient);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.club-card:hover::before {
+  opacity: 1;
 }
 
 .club-card:hover {
@@ -437,19 +610,25 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .club-logo img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.club-card:hover .club-logo img {
+  transform: scale(1.05);
 }
 
 .club-initials {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background-color: var(--accent);
+  background: var(--instagram-gradient);
   color: white;
   display: flex;
   align-items: center;
@@ -495,6 +674,18 @@ body {
   width: 100%;
   text-align: center;
   animation: scaleIn 0.3s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.confirm-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--instagram-gradient);
 }
 
 @keyframes scaleIn {
@@ -576,6 +767,18 @@ body {
   align-items: center;
   padding: 16px 20px;
   border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.ai-modal-header::before,
+.modal-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--instagram-gradient);
 }
 
 .ai-modal-header h3,
@@ -672,11 +875,12 @@ body {
   padding: 15px;
   background-color: #f9f9f9;
   border-radius: 8px;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .club-item:hover {
   background-color: #f0f0f0;
+  transform: translateX(5px);
 }
 
 .club-info h4 {
@@ -697,6 +901,23 @@ body {
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.join-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: 0.5s;
+}
+
+.join-btn:hover::before {
+  left: 100%;
 }
 
 .join-btn:not(.joined) {
@@ -728,6 +949,17 @@ body {
   font-size: 18px;
   margin-bottom: 10px;
   color: var(--text-primary);
+}
+
+/* Pulse animation for new items */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.new-item {
+  animation: pulse 0.5s ease;
 }
 
 /* Responsive Design */
@@ -766,39 +998,13 @@ body {
   .ai-input-area {
     flex-direction: column;
   }
-}
-
-/* Animation for new items */
-@keyframes newItemHighlight {
-  0% { background-color: rgba(0, 149, 246, 0.2); }
-  100% { background-color: transparent; }
-}
-
-.new-item {
-  animation: newItemHighlight 2s ease;
-}
-
-/* Like animation for future implementation */
-.like-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-secondary);
-  transition: color 0.2s ease;
-}
-
-.like-btn:hover {
-  color: var(--error);
-}
-
-.like-btn.liked {
-  color: var(--error);
-  animation: heartBeat 0.5s ease;
-}
-
-@keyframes heartBeat {
-  0% { transform: scale(1); }
-  25% { transform: scale(1.2); }
-  50% { transform: scale(0.95); }
-  100% { transform: scale(1); }
+  
+  .event-details {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .detail:not(:last-child)::after {
+    display: none;
+  }
 }
