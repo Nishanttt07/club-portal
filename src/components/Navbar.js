@@ -14,10 +14,9 @@ export default function Navbar() {
         data: { user },
       } = await supabase.auth.getUser();
       setUser(user);
-      
+
       // Check if user is admin (adjust this based on your admin detection logic)
-      // This example assumes admin status is stored in user_metadata
-      if (user && user.user_metadata && user.user_metadata.isAdmin) {
+      if (user && user.user_metadata?.isAdmin) {
         setIsAdmin(true);
       }
     };
@@ -28,37 +27,24 @@ export default function Navbar() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
-      
-      // Reset admin status on auth change
-      if (session?.user) {
-        setIsAdmin(session.user.user_metadata?.isAdmin || false);
-      } else {
-        setIsAdmin(false);
-      }
+      setIsAdmin(session?.user?.user_metadata?.isAdmin || false);
     });
 
-    // Cleanup subscription when component unmounts
+    // Cleanup subscription
     return () => {
       subscription.unsubscribe();
     };
   }, []);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/login"); // redirect after logout
-  };
-
   const handleProfileClick = () => {
-    navigate("/profile"); // navigate to profile page
+    navigate("/profile");
   };
 
   const handleNotificationsClick = () => {
-    // Handle notifications click
     console.log("Notifications clicked");
   };
 
   const handleChatbotClick = () => {
-    // Handle chatbot click
     console.log("Chatbot clicked");
   };
 
@@ -91,7 +77,7 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Right side - Notifications, Chatbot (if not admin), and Logout */}
+          {/* Right side - Notifications, Chatbot (if not admin) */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <button
               onClick={handleNotificationsClick}
@@ -105,8 +91,7 @@ export default function Navbar() {
             >
               🔔
             </button>
-            
-            {/* Only show chatbot for non-admin users */}
+
             {!isAdmin && (
               <button
                 onClick={handleChatbotClick}
@@ -121,20 +106,6 @@ export default function Navbar() {
                 🤖
               </button>
             )}
-            
-            <button
-              onClick={handleLogout}
-              style={{
-                background: "red",
-                color: "white",
-                border: "none",
-                padding: "8px 16px",
-                borderRadius: "6px",
-                cursor: "pointer",
-              }}
-            >
-              Logout
-            </button>
           </div>
         </>
       )}
