@@ -15,6 +15,52 @@ export default function Login() {
       ? "http://localhost:3000/login"
       : "https://club-portal-blush.vercel.app/login";
 
+  // Helper → Ensure user has a profile row
+  const ensureProfile = async (user) => {
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      console.error("Error fetching profile:", error.message);
+      return null;
+    }
+
+    // If profile doesn't exist → create default profile
+    if (!profile) {
+      const { data: newProfile, error: insertError } = await supabase
+        .from("profiles")
+        .insert([
+          {
+            id: user.id,
+            email: user.email,
+            role: "user", // default role
+          },
+        ])
+        .select("role")
+        .single();
+
+      if (insertError) {
+        console.error("Error creating profile:", insertError.message);
+        return null;
+      }
+      return newProfile;
+    }
+
+    return profile;
+  };
+
+  // Redirect user based on role
+  const redirectUser = (profile) => {
+    if (profile?.role === "admin") {
+      navigate("/admin-dashboard");
+    } else {
+      navigate("/user-dashboard");
+    }
+  };
+
   useEffect(() => {
     const checkUser = async () => {
       const { data, error } = await supabase.auth.getSession();
@@ -25,37 +71,21 @@ export default function Login() {
       }
 
       if (data.session?.user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", data.session.user.id)
-          .single();
-
-        if (profile?.role === "admin") {
-          navigate("/admin-dashboard");
-        } else {
-          navigate("/user-dashboard");
-        }
+        const profile = await ensureProfile(data.session.user);
+        redirectUser(profile);
       }
+
       setLoading(false);
     };
 
     checkUser();
 
+    // Auth listener
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (session?.user) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("role")
-            .eq("id", session.user.id)
-            .single();
-
-          if (profile?.role === "admin") {
-            navigate("/admin-dashboard");
-          } else {
-            navigate("/user-dashboard");
-          }
+          const profile = await ensureProfile(session.user);
+          redirectUser(profile);
         }
       }
     );
@@ -65,6 +95,7 @@ export default function Login() {
     };
   }, [navigate]);
 
+  // Handle login via magic link
   const handleLogin = async (e) => {
     e.preventDefault();
     setMessage("Sending magic link...");
