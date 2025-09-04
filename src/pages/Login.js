@@ -15,74 +15,95 @@ export default function Login() {
       ? "http://localhost:3000/login"
       : "https://club-portal-blush.vercel.app/login";
 
-  // Helper → Ensure user has a profile row
+  // ✅ Ensure user has a profile row
   const ensureProfile = async (user) => {
-    const { data: profile, error } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (error && error.code !== "PGRST116") {
-      console.error("Error fetching profile:", error.message);
-      return null;
-    }
-
-    // If profile doesn't exist → create default profile
-    if (!profile) {
-      const { data: newProfile, error: insertError } = await supabase
+    try {
+      const { data: profile, error } = await supabase
         .from("profiles")
-        .insert([
-          {
-            id: user.id,
-            email: user.email,
-            role: "user", // default role
-          },
-        ])
         .select("role")
+        .eq("id", user.id)
         .single();
 
-      if (insertError) {
-        console.error("Error creating profile:", insertError.message);
-        return null;
+      if (error) {
+        if (error.code === "PGRST116" || error.details?.includes("0 rows")) {
+          console.log("No profile found → creating one...");
+        } else {
+          console.error("Error fetching profile:", error.message);
+          return null;
+        }
       }
-      return newProfile;
-    }
 
-    return profile;
+      // If profile doesn't exist → create default profile
+      if (!profile) {
+        const { data: newProfile, error: insertError } = await supabase
+          .from("profiles")
+          .insert([
+            {
+              id: user.id,
+              email: user.email,
+              role: "user", // default role
+            },
+          ])
+          .select("role")
+          .single();
+
+        if (insertError) {
+          console.error("Error creating profile:", insertError.message);
+          return null;
+        }
+        return newProfile;
+      }
+
+      return profile;
+    } catch (err) {
+      console.error("Unexpected error in ensureProfile:", err);
+      return null;
+    }
   };
 
-  // Redirect user based on role
+  // ✅ Redirect user based on role
   const redirectUser = (profile) => {
-    if (profile?.role === "admin") {
+    if (!profile) {
+      console.warn("No profile found, staying on login page");
+      return;
+    }
+    if (profile.role === "admin") {
       navigate("/admin-dashboard");
     } else {
       navigate("/user-dashboard");
     }
   };
 
+  // ✅ Check session on mount
   useEffect(() => {
     const checkUser = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error("Error checking session:", error.message);
-        setLoading(false);
-        return;
-      }
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        console.log("Session check:", data);
 
-      if (data.session?.user) {
-        const profile = await ensureProfile(data.session.user);
-        redirectUser(profile);
-      }
+        if (error) {
+          console.error("Error checking session:", error.message);
+          return;
+        }
 
-      setLoading(false);
+        if (data.session?.user) {
+          const profile = await ensureProfile(data.session.user);
+          console.log("Loaded profile:", profile);
+          redirectUser(profile);
+        }
+      } catch (err) {
+        console.error("Unexpected error in checkUser:", err);
+      } finally {
+        setLoading(false); // ✅ always stop loading
+      }
     };
 
     checkUser();
 
-    // Auth listener
+    // ✅ Listen to auth state changes
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        console.log("Auth event:", _event, session);
         if (session?.user) {
           const profile = await ensureProfile(session.user);
           redirectUser(profile);
@@ -95,7 +116,7 @@ export default function Login() {
     };
   }, [navigate]);
 
-  // Handle login via magic link
+  // ✅ Handle login via magic link
   const handleLogin = async (e) => {
     e.preventDefault();
     setMessage("Sending magic link...");
