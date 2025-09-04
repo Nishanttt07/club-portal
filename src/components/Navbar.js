@@ -35,19 +35,10 @@ export default function Navbar() {
     };
   }, []);
 
-  // Redirect based on role (profile)
+  // Redirect based on role
   const handleProfileClick = () => {
     if (isAdmin) {
       navigate("/admin-profile");
-    } else {
-      navigate("/user-profile");
-    }
-  };
-
-  // Redirect based on role (dashboard)
-  const handleDashboardClick = () => {
-    if (isAdmin) {
-      navigate("/admin-dashboard");
     } else {
       navigate("/UserProfile");
     }
@@ -73,8 +64,8 @@ export default function Navbar() {
     >
       {user && (
         <>
-          {/* Left side - Profile + Dashboard */}
-          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+          {/* Left side - Profile */}
+          <div style={{ display: "flex", alignItems: "center" }}>
             <button
               onClick={handleProfileClick}
               style={{
@@ -87,20 +78,6 @@ export default function Navbar() {
               }}
             >
               👤 Profile
-            </button>
-
-            <button
-              onClick={handleDashboardClick}
-              style={{
-                background: "transparent",
-                border: "none",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                fontWeight: "bold",
-              }}
-            >
-              📊 Dashboard
             </button>
           </div>
 
