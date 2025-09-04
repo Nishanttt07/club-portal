@@ -40,7 +40,7 @@ export default function Navbar() {
     if (isAdmin) {
       navigate("/admin-profile");
     } else {
-      navigate("/UserProfile");
+      navigate("/user-profile");
     }
   };
 
