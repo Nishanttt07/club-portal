@@ -12,7 +12,7 @@ export default function Navbar() {
         alignItems: "center",
       }}
     >
-      <h3>Navbar</h3>
+      {/* <h3>Navbar</h3> */}
     </nav>
   );
 }
