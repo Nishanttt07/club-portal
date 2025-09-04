@@ -12,7 +12,7 @@ export default function UserProfile() {
 
   useEffect(() => {
     const fetchUserAndData = async () => {
-      // ✅ Use getSession instead of getUser
+      // ✅ Get current session
       const { data, error: sessionError } = await supabase.auth.getSession();
 
       if (sessionError || !data.session) {
@@ -20,15 +20,28 @@ export default function UserProfile() {
         return;
       }
 
-      const user = data.session.user;
-      setUser(user);
+      const authUser = data.session.user;
+      setUser(authUser);
 
       try {
-        // Get memberships
+        // ✅ Fetch memberships + related club info
         const { data: memberships, error: membershipsError } = await supabase
           .from("memberships")
-          .select("club_id, joined_at")
-          .eq("user_id", user.id);
+          .select(
+            `
+            id,
+            role,
+            joined_at,
+            clubs (
+              id,
+              name,
+              description,
+              logo_url,
+              admin_user_id
+            )
+          `
+          )
+          .eq("user_id", authUser.id);
 
         if (membershipsError) throw membershipsError;
 
@@ -38,24 +51,13 @@ export default function UserProfile() {
           return;
         }
 
-        const clubIds = memberships.map((m) => m.club_id);
-
-        // Get club details
-        const { data: clubsData, error: clubsError } = await supabase
-          .from("clubs")
-          .select("id, name, description, logo_url")
-          .in("id", clubIds);
-
-        if (clubsError) throw clubsError;
-
-        // Merge club + membership data
-        const merged = clubsData.map((club) => {
-          const membership = memberships.find((m) => m.club_id === club.id);
-          return {
-            ...club,
-            joined_at: membership.joined_at,
-          };
-        });
+        // ✅ Flatten memberships so each has club info
+        const merged = memberships.map((m) => ({
+          membership_id: m.id,
+          role: m.role,
+          joined_at: m.joined_at,
+          ...m.clubs, // spread club fields
+        }));
 
         setClubs(merged);
       } catch (err) {
@@ -139,6 +141,7 @@ export default function UserProfile() {
                     <div className="joined-date">
                       Joined: {formatDate(club.joined_at)}
                     </div>
+                    <div className="role">Role: {club.role}</div>
                   </div>
                 </div>
               ))}
