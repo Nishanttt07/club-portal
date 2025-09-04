@@ -44,26 +44,31 @@ function useUserData(user) {
     const fetchUserData = async () => {
       try {
         // Fetch user's clubs
-        const { data: memberships } = await supabase
+        const { data: memberships, error: membershipsError } = await supabase
           .from("memberships")
           .select("club_id")
           .eq("user_id", user.id);
 
+        if (membershipsError) throw membershipsError;
+
         // Fetch all available clubs
-        const { data: allClubsData } = await supabase
+        const { data: allClubsData, error: allClubsError } = await supabase
           .from("clubs")
           .select("*");
+        
+        if (allClubsError) throw allClubsError;
         setAllClubs(allClubsData || []);
 
         if (memberships && memberships.length > 0) {
           const clubIds = memberships.map(m => m.club_id);
           
           // Fetch club details
-          const { data: clubData } = await supabase
+          const { data: clubData, error: clubError } = await supabase
             .from("clubs")
             .select("*")
             .in("id", clubIds);
           
+          if (clubError) throw clubError;
           setClubs(clubData || []);
 
           // Fetch events and announcements from user's clubs
@@ -84,44 +89,59 @@ function useUserData(user) {
   }, [user]);
 
   const fetchEvents = async (clubIds) => {
-    let { data } = await supabase
-      .from("events")
-      .select("*, clubs(name)")
-      .in("club_id", clubIds)
-      .order("created_at", { ascending: false });
-    setEvents(data || []);
+    try {
+      let { data, error } = await supabase
+        .from("events")
+        .select("*, clubs(name)")
+        .in("club_id", clubIds)
+        .order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      setEvents(data || []);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    }
   };
 
   const fetchAnnouncements = async (clubIds) => {
-    let { data } = await supabase
-      .from("announcements")
-      .select("*, clubs(name)")
-      .in("club_id", clubIds)
-      .order("created_at", { ascending: false });
-    setAnnouncements(data || []);
+    try {
+      let { data, error } = await supabase
+        .from("announcements")
+        .select("*, clubs(name)")
+        .in("club_id", clubIds)
+        .order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      setAnnouncements(data || []);
+    } catch (error) {
+      console.error("Error fetching announcements:", error);
+    }
   };
 
   const joinClub = async (clubId) => {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("memberships")
         .insert([{ user_id: user.id, club_id: clubId }]);
       
       if (error) throw error;
       
       // Refresh clubs after joining
-      const { data: memberships } = await supabase
+      const { data: memberships, error: membershipsError } = await supabase
         .from("memberships")
         .select("club_id")
         .eq("user_id", user.id);
       
+      if (membershipsError) throw membershipsError;
+      
       if (memberships && memberships.length > 0) {
         const clubIds = memberships.map(m => m.club_id);
-        const { data: clubData } = await supabase
+        const { data: clubData, error: clubError } = await supabase
           .from("clubs")
           .select("*")
           .in("id", clubIds);
         
+        if (clubError) throw clubError;
         setClubs(clubData || []);
         
         // Also update events and announcements
@@ -155,16 +175,25 @@ function FeedItem({ item, type }) {
   const [expanded, setExpanded] = useState(false);
   
   const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+    if (!dateString) return 'Date not specified';
+    try {
+      const options = { year: 'numeric', month: 'short', day: 'numeric' };
+      return new Date(dateString).toLocaleDateString(undefined, options);
+    } catch (error) {
+      return 'Invalid date';
+    }
   };
 
   const formatTime = (timeString) => {
     if (!timeString) return '';
-    return new Date(`2000-01-01T${timeString}`).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
+    try {
+      return new Date(`2000-01-01T${timeString}`).toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+    } catch (error) {
+      return 'Invalid time';
+    }
   };
 
   return (
@@ -180,7 +209,13 @@ function FeedItem({ item, type }) {
         <>
           {item.image_url && (
             <div className="feed-image">
-              <img src={item.image_url} alt={item.title} />
+              <img 
+                src={item.image_url} 
+                alt={item.title} 
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
             </div>
           )}
           
@@ -247,7 +282,13 @@ function FeedItem({ item, type }) {
         <>
           {item.image_url && (
             <div className="feed-image">
-              <img src={item.image_url} alt={item.title} />
+              <img 
+                src={item.image_url} 
+                alt={item.title} 
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
             </div>
           )}
           
@@ -289,17 +330,21 @@ function ProfileSection({ user, clubs, onLogout }) {
   return (
     <div className="profile-section">
       <div className="profile-header">
-        <div className="profile-avatar">
-          {user.email ? user.email[0].toUpperCase() : 'U'}
-        </div>
-        <div className="profile-info">
-          <h2 className="profile-name">{user.email}</h2>
-          <p className="profile-stats">
-            <span>{clubs.length} Clubs</span>
-            <span>•</span>
-            <span>Member since {new Date(user.created_at).toLocaleDateString()}</span>
-          </p>
-        </div>
+        {user.email && (
+          <>
+            <div className="profile-avatar">
+              {user.email[0].toUpperCase()}
+            </div>
+            <div className="profile-info">
+              <h2 className="profile-name">{user.email}</h2>
+              <p className="profile-stats">
+                <span>{clubs.length} Clubs</span>
+                <span>•</span>
+                <span>Member since {new Date(user.created_at).toLocaleDateString()}</span>
+              </p>
+            </div>
+          </>
+        )}
         <button className="logout-btn" onClick={onLogout}>
           Logout
         </button>
@@ -356,6 +401,12 @@ function AIAssistant({ events, announcements }) {
     e.preventDefault();
     if (!query.trim()) return;
     
+    // Check if OpenAI key is configured
+    if (!process.env.REACT_APP_OPENAI_KEY) {
+      setResponse("OpenAI API key is not configured. Please contact the administrator.");
+      return;
+    }
+    
     setLoading(true);
     
     try {
@@ -371,15 +422,12 @@ function AIAssistant({ events, announcements }) {
       const context = `Events:\n${eventsContext}\n\nAnnouncements:\n${announcementsContext}`;
       
       // Call OpenAI API
-   const OPENAI_KEY = process.env.REACT_APP_OPENAI_KEY;
-
-const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${OPENAI_KEY}`
-  },
-
+      const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.REACT_APP_OPENAI_KEY}`
+        },
         body: JSON.stringify({
           model: "gpt-3.5-turbo",
           messages: [
@@ -467,6 +515,17 @@ const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions',
 // Clubs Explorer Component
 function ClubsExplorer({ clubs, onJoinClub, userClubs }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [joining, setJoining] = useState(false);
+  
+  const handleJoinClub = async (clubId) => {
+    setJoining(true);
+    const result = await onJoinClub(clubId);
+    setJoining(false);
+    
+    if (result.success) {
+      setIsOpen(false);
+    }
+  };
   
   return (
     <>
@@ -499,10 +558,10 @@ function ClubsExplorer({ clubs, onJoinClub, userClubs }) {
                       </div>
                       <button 
                         className={`join-btn ${isMember ? 'joined' : ''}`}
-                        onClick={() => !isMember && onJoinClub(club.id)}
-                        disabled={isMember}
+                        onClick={() => !isMember && handleJoinClub(club.id)}
+                        disabled={isMember || joining}
                       >
-                        {isMember ? 'Joined' : 'Join Club'}
+                        {joining ? 'Joining...' : isMember ? 'Joined' : 'Join Club'}
                       </button>
                     </div>
                   );
@@ -589,9 +648,11 @@ export default function UserDashboard() {
           />
           <AIAssistant events={events} announcements={announcements} />
           <div className="user-menu">
-            <div className="user-avatar">
-              {user.email ? user.email[0].toUpperCase() : 'U'}
-            </div>
+            {user.email && (
+              <div className="user-avatar">
+                {user.email[0].toUpperCase()}
+              </div>
+            )}
           </div>
         </div>
       </header>
