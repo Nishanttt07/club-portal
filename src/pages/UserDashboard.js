@@ -1,3 +1,286 @@
+// import React, { useEffect, useState } from "react";
+// import { supabase } from "../supabaseClient";
+// import { useNavigate } from "react-router-dom";
+// import "./UserDashboard.css";
+
+// // Custom hook for authentication state
+// function useAuth() {
+//   const [user, setUser] = useState(null);
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     const getSession = async () => {
+//       const { data: { session } } = await supabase.auth.getSession();
+//       setUser(session?.user ?? null);
+//       setLoading(false);
+//     };
+
+//     getSession();
+
+//     const { data: { subscription } } = supabase.auth.onAuthStateChange(
+//       async (event, session) => {
+//         setUser(session?.user ?? null);
+//         setLoading(false);
+//       }
+//     );
+
+//     return () => subscription.unsubscribe();
+//   }, []);
+
+//   return { user, loading };
+// }
+
+// // Custom hook for user data (memberships, events, announcements)
+// function useUserData(user) {
+//   const [memberships, setMemberships] = useState([]);
+//   const [events, setEvents] = useState([]);
+//   const [announcements, setAnnouncements] = useState([]);
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     if (!user) return;
+
+//     const fetchUserData = async () => {
+//       try {
+//         // Fetch user's memberships
+//         const { data: membershipsData } = await supabase
+//           .from("memberships")
+//           .select("club_id")
+//           .eq("user_id", user.id);
+
+//         if (!membershipsData || membershipsData.length === 0) {
+//           setLoading(false);
+//           return;
+//         }
+
+//         const clubIds = membershipsData.map(m => m.club_id);
+
+//         // Fetch events and announcements from user's clubs
+//         await Promise.all([
+//           fetchEvents(clubIds),
+//           fetchAnnouncements(clubIds)
+//         ]);
+        
+//         setLoading(false);
+//       } catch (error) {
+//         console.error("Error fetching user data:", error);
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchUserData();
+//   }, [user]);
+
+//   const fetchEvents = async (clubIds) => {
+//     let { data } = await supabase
+//       .from("events")
+//       .select("*")
+//       .in("club_id", clubIds)
+//       .order("date", { ascending: false });
+//     setEvents(data || []);
+//   };
+
+//   const fetchAnnouncements = async (clubIds) => {
+//     let { data } = await supabase
+//       .from("announcements")
+//       .select("*")
+//       .in("club_id", clubIds)
+//       .order("created_at", { ascending: false });
+//     setAnnouncements(data || []);
+//   };
+
+//   return {
+//     memberships,
+//     events,
+//     announcements,
+//     loading,
+//     fetchEvents,
+//     fetchAnnouncements
+//   };
+// }
+
+// // Event Post Component
+// function EventPost({ event }) {
+//   return (
+//     <div className="post-card event-post">
+//       <div className="post-header">
+//         <h3 className="post-title">{event.title}</h3>
+//         <span className="post-date">{new Date(event.date).toLocaleDateString()}</span>
+//       </div>
+//       {event.image_url && (
+//         <img src={event.image_url} alt={event.title} className="post-image" />
+//       )}
+//       <div className="post-content">
+//         <p className="post-details">
+//           {event.time && <span>Time: {event.time}</span>}
+//           {event.venue && <span>Venue: {event.venue}</span>}
+//           {event.entry_fee && <span>Entry Fee: ${event.entry_fee}</span>}
+//         </p>
+//         {event.description && <p className="post-description">{event.description}</p>}
+//         {event.prize_pool && <p className="post-prize">Prize Pool: {event.prize_pool}</p>}
+//         {event.registration_link && (
+//           <a href={event.registration_link} target="_blank" rel="noopener noreferrer" className="post-link">
+//             Register Here
+//           </a>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// // Announcement Post Component
+// function AnnouncementPost({ announcement }) {
+//   return (
+//     <div className="post-card announcement-post">
+//       <div className="post-header">
+//         <h3 className="post-title">{announcement.title}</h3>
+//         <span className="post-date">{new Date(announcement.created_at).toLocaleDateString()}</span>
+//       </div>
+//       {announcement.image_url && (
+//         <img src={announcement.image_url} alt={announcement.title} className="post-image" />
+//       )}
+//       <div className="post-content">
+//         <p className="post-message">{announcement.message}</p>
+//         {announcement.link && (
+//           <a href={announcement.link} target="_blank" rel="noopener noreferrer" className="post-link">
+//             Learn More
+//           </a>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// // Logout Confirmation Modal
+// function LogoutModal({ show, onCancel, onConfirm }) {
+//   if (!show) return null;
+
+//   return (
+//     <div className="modal-overlay" onClick={onCancel}>
+//       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+//         <div className="modal-header">
+//           <h3>Confirm Logout</h3>
+//           <button className="modal-close" onClick={onCancel}>×</button>
+//         </div>
+//         <div className="modal-body">
+//           <p>Are you sure you want to log out?</p>
+//           <div className="modal-buttons">
+//             <button className="modal-button cancel" onClick={onCancel}>
+//               Cancel
+//             </button>
+//             <button className="modal-button confirm" onClick={onConfirm}>
+//               Log Out
+//             </button>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// // Main UserDashboard Component
+// export default function UserDashboard() {
+//   const { user, loading: authLoading } = useAuth();
+//   const {
+//     events,
+//     announcements,
+//     loading: dataLoading,
+//     memberships
+//   } = useUserData(user);
+  
+//   const [activeTab, setActiveTab] = useState("events");
+//   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+//   const navigate = useNavigate();
+
+//   useEffect(() => {
+//     if (!authLoading && !user) {
+//       navigate("/login");
+//     }
+//   }, [user, authLoading, navigate]);
+
+//   const handleLogout = async () => {
+//     await supabase.auth.signOut();
+//     navigate("/login");
+//   };
+
+//   if (authLoading || dataLoading) {
+//     return (
+//       <div className="dashboard-container loading">
+//         <div className="loading-spinner"></div>
+//         <p>Loading dashboard...</p>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="dashboard-container">
+//       <LogoutModal
+//         show={showLogoutConfirm}
+//         onCancel={() => setShowLogoutConfirm(false)}
+//         onConfirm={handleLogout}
+//       />
+
+//       <div className="dashboard-header">
+//         <h1>ClubHub Feed</h1>
+//         <div className="user-controls">
+//           <button className="logout-btn" onClick={() => setShowLogoutConfirm(true)}>
+//             Logout
+//           </button>
+//         </div>
+//       </div>
+
+//       {memberships.length === 0 ? (
+//         <div className="no-memberships">
+//           <h2>Welcome to ClubHub!</h2>
+//           <p>You haven't joined any clubs yet. Explore clubs and join to see events and announcements.</p>
+//           <button className="explore-btn" onClick={() => navigate("/clubs")}>
+//             Explore Clubs
+//           </button>
+//         </div>
+//       ) : (
+//         <>
+//           {/* Tabs */}
+//           <div className="tabs">
+//             <button
+//               className={`tab-btn ${activeTab === "events" ? "active" : ""}`}
+//               onClick={() => setActiveTab("events")}
+//             >
+//               Events
+//             </button>
+//             <button
+//               className={`tab-btn ${activeTab === "announcements" ? "active" : ""}`}
+//               onClick={() => setActiveTab("announcements")}
+//             >
+//               Announcements
+//             </button>
+//           </div>
+
+//           {/* Feed */}
+//           <div className="feed">
+//             {activeTab === "events" &&
+//               (events.length > 0 ? (
+//                 events.map((event) => (
+//                   <EventPost key={event.id} event={event} />
+//                 ))
+//               ) : (
+//                 <p className="no-data">No events yet.</p>
+//               ))}
+
+//             {activeTab === "announcements" &&
+//               (announcements.length > 0 ? (
+//                 announcements.map((a) => (
+//                   <AnnouncementPost key={a.id} announcement={a} />
+//                 ))
+//               ) : (
+//                 <p className="no-data">No announcements yet.</p>
+//               ))}
+//           </div>
+//         </>
+//       )}
+//     </div>
+//   );
+// }
+
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
@@ -35,7 +318,6 @@ function useUserData(user) {
   const [clubs, setClubs] = useState([]);
   const [events, setEvents] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
-  const [allClubs, setAllClubs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -48,12 +330,6 @@ function useUserData(user) {
           .from("memberships")
           .select("club_id")
           .eq("user_id", user.id);
-
-        // Fetch all available clubs
-        const { data: allClubsData } = await supabase
-          .from("clubs")
-          .select("*");
-        setAllClubs(allClubsData || []);
 
         if (memberships && memberships.length > 0) {
           const clubIds = memberships.map(m => m.club_id);
@@ -101,58 +377,21 @@ function useUserData(user) {
     setAnnouncements(data || []);
   };
 
-  const joinClub = async (clubId) => {
-    try {
-      const { data, error } = await supabase
-        .from("memberships")
-        .insert([{ user_id: user.id, club_id: clubId }]);
-      
-      if (error) throw error;
-      
-      // Refresh clubs after joining
-      const { data: memberships } = await supabase
-        .from("memberships")
-        .select("club_id")
-        .eq("user_id", user.id);
-      
-      if (memberships && memberships.length > 0) {
-        const clubIds = memberships.map(m => m.club_id);
-        const { data: clubData } = await supabase
-          .from("clubs")
-          .select("*")
-          .in("id", clubIds);
-        
-        setClubs(clubData || []);
-        
-        // Also update events and announcements
-        await Promise.all([
-          fetchEvents(clubIds),
-          fetchAnnouncements(clubIds)
-        ]);
-      }
-      
-      return { success: true };
-    } catch (error) {
-      console.error("Error joining club:", error);
-      return { success: false, error };
-    }
-  };
-
   return {
     clubs,
     events,
     announcements,
-    allClubs,
     loading,
     fetchEvents,
-    fetchAnnouncements,
-    joinClub
+    fetchAnnouncements
   };
 }
 
 // Feed Item Component
 function FeedItem({ item, type }) {
   const [expanded, setExpanded] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [saved, setSaved] = useState(false);
   
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
@@ -174,6 +413,7 @@ function FeedItem({ item, type }) {
           {item.clubs && <div className="club-name">@{item.clubs.name}</div>}
           <span className="post-time">{formatDate(item.created_at)}</span>
         </div>
+        <button className="more-options">⋯</button>
       </div>
       
       {type === 'event' ? (
@@ -188,15 +428,18 @@ function FeedItem({ item, type }) {
             <h3 className="event-title">{item.title}</h3>
             <p className="event-details">
               <span className="detail">
+                <i className="icon calendar"></i>
                 {formatDate(item.date)}
               </span>
               {item.time && (
                 <span className="detail">
+                  <i className="icon clock"></i>
                   {formatTime(item.time)}
                 </span>
               )}
               {item.venue && (
                 <span className="detail">
+                  <i className="icon location"></i>
                   {item.venue}
                 </span>
               )}
@@ -220,11 +463,13 @@ function FeedItem({ item, type }) {
               <div className="event-stats">
                 {item.entry_fee && (
                   <span className="stat">
+                    <i className="icon ticket"></i>
                     Entry: ${item.entry_fee}
                   </span>
                 )}
                 {item.prize_pool && (
                   <span className="stat">
+                    <i className="icon trophy"></i>
                     Prize: {item.prize_pool}
                   </span>
                 )}
@@ -278,6 +523,34 @@ function FeedItem({ item, type }) {
           </div>
         </>
       )}
+      
+      <div className="feed-actions">
+        <button 
+          className={`action-btn ${liked ? 'liked' : ''}`}
+          onClick={() => setLiked(!liked)}
+        >
+          <i className="icon heart">{liked ? '❤️' : '🤍'}</i>
+          {liked ? 'Liked' : 'Like'}
+        </button>
+        
+        <button className="action-btn">
+          <i className="icon comment">💬</i>
+          Comment
+        </button>
+        
+        <button 
+          className={`action-btn ${saved ? 'saved' : ''}`}
+          onClick={() => setSaved(!saved)}
+        >
+          <i className="icon save">{saved ? '🔖' : '📑'}</i>
+          {saved ? 'Saved' : 'Save'}
+        </button>
+        
+        <button className="action-btn share">
+          <i className="icon share">📤</i>
+          Share
+        </button>
+      </div>
     </div>
   );
 }
@@ -312,6 +585,12 @@ function ProfileSection({ user, clubs, onLogout }) {
         >
           My Clubs
         </button>
+        <button 
+          className={`tab ${activeTab === 'activity' ? 'active' : ''}`}
+          onClick={() => setActiveTab('activity')}
+        >
+          My Activity
+        </button>
       </div>
       
       <div className="tab-content">
@@ -345,70 +624,9 @@ function ProfileSection({ user, clubs, onLogout }) {
   );
 }
 
-// AI Assistant Component
-function AIAssistant({ events, announcements }) {
+// AI Assistant Button Component
+function AIAssistantButton() {
   const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [response, setResponse] = useState("");
-  const [loading, setLoading] = useState(false);
-  
-  const handleQuerySubmit = async (e) => {
-    e.preventDefault();
-    if (!query.trim()) return;
-    
-    setLoading(true);
-    
-    try {
-      // Prepare context from events and announcements
-      const eventsContext = events.map(e => 
-        `Event: ${e.title} on ${e.date} at ${e.time || 'TBA'}. ${e.description || ''}`
-      ).join('\n');
-      
-      const announcementsContext = announcements.map(a => 
-        `Announcement: ${a.title}. ${a.message || ''}`
-      ).join('\n');
-      
-      const context = `Events:\n${eventsContext}\n\nAnnouncements:\n${announcementsContext}`;
-      
-      // Call OpenAI API
-   const OPENAI_KEY = process.env.REACT_APP_OPENAI_KEY;
-
-const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${OPENAI_KEY}`
-  },
-
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [
-            {
-              role: "system",
-              content: `You are a helpful assistant for a club management platform. 
-              Use the following information about events and announcements to answer the user's question.
-              If the information isn't in the provided context, say so politely.
-              
-              Context:
-              ${context}`
-            },
-            {
-              role: "user",
-              content: query
-            }
-          ]
-        })
-      });
-      
-      const data = await openaiResponse.json();
-      setResponse(data.choices[0].message.content);
-    } catch (error) {
-      console.error("Error calling OpenAI API:", error);
-      setResponse("Sorry, I'm having trouble connecting to the assistant. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
   
   return (
     <>
@@ -416,6 +634,7 @@ const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions',
         className="ai-assistant-btn"
         onClick={() => setIsOpen(true)}
       >
+        <i className="ai-icon">🤖</i>
         AI Assistant
       </button>
       
@@ -429,88 +648,34 @@ const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions',
           </div>
           <div className="ai-modal-content">
             <div className="ai-message">
+              <div className="ai-avatar">AI</div>
               <div className="message-content">
                 <p>Hi there! How can I help you with your clubs and events today?</p>
               </div>
             </div>
             
-            {response && (
-              <div className="ai-response">
-                <p>{response}</p>
-              </div>
-            )}
+            <div className="suggested-questions">
+              <button className="suggestion-chip">
+                Suggest upcoming events I might like
+              </button>
+              <button className="suggestion-chip">
+                Help me create a new event
+              </button>
+              <button className="suggestion-chip">
+                Find clubs matching my interests
+              </button>
+            </div>
             
-            <form onSubmit={handleQuerySubmit} className="ai-input-area">
+            <div className="ai-input-area">
               <input 
                 type="text" 
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
                 placeholder="Ask me anything about clubs and events..."
                 className="ai-input"
-                disabled={loading}
               />
-              <button 
-                type="submit" 
-                className="ai-send-btn"
-                disabled={loading}
-              >
-                {loading ? "Processing..." : "Send"}
+              <button className="ai-send-btn">
+                <i className="send-icon">📤</i>
               </button>
-            </form>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
-// Clubs Explorer Component
-function ClubsExplorer({ clubs, onJoinClub, userClubs }) {
-  const [isOpen, setIsOpen] = useState(false);
-  
-  return (
-    <>
-      <button 
-        className="clubs-explorer-btn"
-        onClick={() => setIsOpen(true)}
-      >
-        Explore Clubs
-      </button>
-      
-      {isOpen && (
-        <div className="clubs-explorer-modal">
-          <div className="modal-header">
-            <h3>Available Clubs</h3>
-            <button className="close-btn" onClick={() => setIsOpen(false)}>
-              ×
-            </button>
-          </div>
-          <div className="modal-content">
-            {clubs.length > 0 ? (
-              <div className="clubs-list">
-                {clubs.map(club => {
-                  const isMember = userClubs.some(c => c.id === club.id);
-                  
-                  return (
-                    <div key={club.id} className="club-item">
-                      <div className="club-info">
-                        <h4>{club.name}</h4>
-                        <p>{club.description || "No description available"}</p>
-                      </div>
-                      <button 
-                        className={`join-btn ${isMember ? 'joined' : ''}`}
-                        onClick={() => !isMember && onJoinClub(club.id)}
-                        disabled={isMember}
-                      >
-                        {isMember ? 'Joined' : 'Join Club'}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p>No clubs available at the moment.</p>
-            )}
+            </div>
           </div>
         </div>
       )}
@@ -525,9 +690,9 @@ export default function UserDashboard() {
     clubs,
     events,
     announcements,
-    allClubs,
     loading: dataLoading,
-    joinClub
+    fetchEvents,
+    fetchAnnouncements
   } = useUserData(user);
   
   const [activeView, setActiveView] = useState('feed');
@@ -570,24 +735,21 @@ export default function UserDashboard() {
               className={`nav-tab ${activeView === 'feed' ? 'active' : ''}`}
               onClick={() => setActiveView('feed')}
             >
+              <i className="nav-icon">🏠</i>
               Feed
             </button>
             <button 
               className={`nav-tab ${activeView === 'profile' ? 'active' : ''}`}
               onClick={() => setActiveView('profile')}
             >
+              <i className="nav-icon">👤</i>
               Profile
             </button>
           </nav>
         </div>
         
         <div className="header-right">
-          <ClubsExplorer 
-            clubs={allClubs} 
-            userClubs={clubs}
-            onJoinClub={joinClub}
-          />
-          <AIAssistant events={events} announcements={announcements} />
+          <AIAssistantButton />
           <div className="user-menu">
             <div className="user-avatar">
               {user.email ? user.email[0].toUpperCase() : 'U'}
@@ -600,29 +762,47 @@ export default function UserDashboard() {
       <main className="dashboard-main">
         {activeView === 'feed' ? (
           <div className="feed-container">
-            {clubs.length === 0 ? (
-              <div className="empty-feed">
-                <h3>Welcome to ClubHub!</h3>
-                <p>You haven't joined any clubs yet. Explore clubs and join to see events and announcements.</p>
+            <div className="stories-bar">
+              <div className="story">
+                <div className="story-avatar">
+                  <div className="add-story">+</div>
+                </div>
+                <span className="story-name">Your Story</span>
               </div>
-            ) : (
-              <div className="feed">
-                {feedItems.length > 0 ? (
-                  feedItems.map(item => (
-                    <FeedItem 
-                      key={`${item.type}-${item.id}`} 
-                      item={item} 
-                      type={item.type} 
-                    />
-                  ))
-                ) : (
-                  <div className="empty-feed">
-                    <h3>No activities yet</h3>
-                    <p>When clubs you're in post events or announcements, they'll appear here.</p>
+              
+              {clubs.map(club => (
+                <div key={club.id} className="story">
+                  <div className="story-avatar">
+                    {club.logo_url ? (
+                      <img src={club.logo_url} alt={club.name} />
+                    ) : (
+                      <div className="club-avatar">
+                        {club.name ? club.name[0].toUpperCase() : 'C'}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            )}
+                  <span className="story-name">{club.name}</span>
+                </div>
+              ))}
+            </div>
+            
+            <div className="feed">
+              {feedItems.length > 0 ? (
+                feedItems.map(item => (
+                  <FeedItem 
+                    key={`${item.type}-${item.id}`} 
+                    item={item} 
+                    type={item.type} 
+                  />
+                ))
+              ) : (
+                <div className="empty-feed">
+                  <i className="empty-icon">📋</i>
+                  <h3>No activities yet</h3>
+                  <p>When clubs you're in post events or announcements, they'll appear here.</p>
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <ProfileSection user={user} clubs={clubs} onLogout={() => setShowLogoutConfirm(true)} />
