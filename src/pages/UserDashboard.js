@@ -1,4 +1,3 @@
-// UserDashboard.js
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
@@ -137,7 +136,7 @@ export default function UserDashboard() {
       <div className="dashboard-header">
         <h1>ClubHub Feed</h1>
         <div className="user-controls">
-          <span className="welcome-text">Hi, {user?.email}</span>
+          {/* Removed email from header as requested */}
           <button className="logout-btn" onClick={handleLogout}>
             Logout
           </button>
@@ -196,7 +195,6 @@ export default function UserDashboard() {
               <div className="avatar">{getInitial(user.email)}</div>
               <div className="profile-info">
                 <h2>{user.email}</h2>
-                {/* user.created_at may not exist in auth, fallback */}
                 <p>
                   Joined:{" "}
                   {user?.created_at
