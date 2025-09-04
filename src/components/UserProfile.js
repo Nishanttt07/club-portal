@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
+import "./UserProfile.css";
 
 export default function UserProfile() {
   const [user, setUser] = useState(null);
