@@ -1,10 +1,10 @@
-// UserProfile.js
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 
 export default function UserProfile() {
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -12,18 +12,30 @@ export default function UserProfile() {
 
   useEffect(() => {
     const fetchUserAndData = async () => {
-      // ✅ Get current session
-      const { data, error: sessionError } = await supabase.auth.getSession();
+      // ✅ Get current user
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-      if (sessionError || !data.session) {
+      if (userError || !user) {
         navigate("/login");
         return;
       }
 
-      const authUser = data.session.user;
-      setUser(authUser);
+      setUser(user);
 
       try {
+        // ✅ Fetch profile row (from "profiles" table)
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("id, email, role, created_at")
+          .eq("id", user.id)
+          .single();
+
+        if (profileError) throw profileError;
+        setProfile(profileData);
+
         // ✅ Fetch memberships + related club info
         const { data: memberships, error: membershipsError } = await supabase
           .from("memberships")
@@ -36,33 +48,26 @@ export default function UserProfile() {
               id,
               name,
               description,
-              logo_url,
-              admin_user_id
+              logo_url
             )
           `
           )
-          .eq("user_id", authUser.id);
+          .eq("user_id", user.id);
 
         if (membershipsError) throw membershipsError;
 
-        if (!memberships || memberships.length === 0) {
-          setClubs([]);
-          setLoading(false);
-          return;
-        }
-
-        // ✅ Flatten memberships so each has club info
-        const merged = memberships.map((m) => ({
-          membership_id: m.id,
-          role: m.role,
-          joined_at: m.joined_at,
-          ...m.clubs, // spread club fields
-        }));
+        const merged =
+          memberships?.map((m) => ({
+            membership_id: m.id,
+            role: m.role,
+            joined_at: m.joined_at,
+            ...m.clubs,
+          })) || [];
 
         setClubs(merged);
       } catch (err) {
-        console.error("Error loading memberships:", err);
-        setError("Failed to load your clubs. Please try again.");
+        console.error("Error loading profile or memberships:", err);
+        setError("Failed to load your profile data.");
       } finally {
         setLoading(false);
       }
@@ -96,14 +101,15 @@ export default function UserProfile() {
 
   return (
     <div className="profile-page">
-      {user && (
+      {profile && (
         <>
           {/* Profile Header */}
           <div className="profile-header">
-            <div className="avatar">{getInitial(user.email)}</div>
+            <div className="avatar">{getInitial(profile.email)}</div>
             <div className="profile-info">
-              <h2>{user.email}</h2>
-              <p>Joined: {formatDate(user.created_at)}</p>
+              <h2>{profile.email}</h2>
+              <p>Role: {profile.role}</p>
+              <p>Joined: {formatDate(profile.created_at)}</p>
             </div>
             <button className="logout-btn" onClick={handleLogout}>
               Logout
