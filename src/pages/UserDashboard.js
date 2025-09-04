@@ -5,12 +5,9 @@ import "./UserDashboard.css"; // Custom CSS for Instagram-like styling
 
 export default function UserDashboard() {
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState("events"); // "events" | "announcements" | "profile"
+  const [activeTab, setActiveTab] = useState("events"); // "events" | "announcements"
   const [events, setEvents] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
-  const [clubs, setClubs] = useState([]);
-  const [profileLoading, setProfileLoading] = useState(false);
-  const [profileError, setProfileError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,12 +44,6 @@ export default function UserDashboard() {
     };
   }, [navigate]);
 
-  useEffect(() => {
-    if (activeTab === "profile" && user) {
-      fetchUserClubs();
-    }
-  }, [activeTab, user]);
-
   const fetchEvents = async () => {
     let { data, error } = await supabase
       .from("events")
@@ -69,66 +60,9 @@ export default function UserDashboard() {
     if (!error) setAnnouncements(data || []);
   };
 
-  const fetchUserClubs = async () => {
-    setProfileLoading(true);
-    setProfileError("");
-
-    try {
-      const { data: memberships, error: membershipsError } = await supabase
-        .from("memberships")
-        .select("club_id, joined_at")
-        .eq("user_id", user.id);
-
-      if (membershipsError) throw membershipsError;
-
-      if (!memberships || memberships.length === 0) {
-        setClubs([]);
-        setProfileLoading(false);
-        return;
-      }
-
-      const clubIds = memberships.map((m) => m.club_id);
-
-      const { data: clubsData, error: clubsError } = await supabase
-        .from("clubs")
-        .select("id, name, description, logo_url")
-        .in("id", clubIds);
-
-      if (clubsError) throw clubsError;
-
-      const merged = clubsData.map((club) => {
-        const membership = memberships.find((m) => m.club_id === club.id);
-        return {
-          ...club,
-          joined_at: membership.joined_at,
-        };
-      });
-
-      setClubs(merged);
-    } catch (err) {
-      console.error("Error loading memberships:", err);
-      setProfileError("Failed to load your clubs. Please try again.");
-    } finally {
-      setProfileLoading(false);
-    }
-  };
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/login");
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const getInitial = (email) => {
-    return email ? email.charAt(0).toUpperCase() : "U";
   };
 
   return (
@@ -136,7 +70,6 @@ export default function UserDashboard() {
       <div className="dashboard-header">
         <h1>ClubHub Feed</h1>
         <div className="user-controls">
-          {/* Removed email from header as requested */}
           <button className="logout-btn" onClick={handleLogout}>
             Logout
           </button>
@@ -156,12 +89,6 @@ export default function UserDashboard() {
           onClick={() => setActiveTab("announcements")}
         >
           Announcements
-        </button>
-        <button
-          className={`tab-btn ${activeTab === "profile" ? "active" : ""}`}
-          onClick={() => setActiveTab("profile")}
-        >
-          Profile
         </button>
       </div>
 
@@ -188,54 +115,6 @@ export default function UserDashboard() {
           ) : (
             <p className="no-data">No announcements yet.</p>
           ))}
-
-        {activeTab === "profile" && user && (
-          <div className="profile-section">
-            <div className="profile-header">
-              <div className="avatar">{getInitial(user.email)}</div>
-              <div className="profile-info">
-                <h2>{user.email}</h2>
-                <p>
-                  Joined:{" "}
-                  {user?.created_at
-                    ? formatDate(user.created_at)
-                    : "Unknown"}
-                </p>
-              </div>
-            </div>
-
-            <div className="clubs-section">
-              <h3>My Clubs</h3>
-
-              {profileLoading && <p className="loading">Loading clubs...</p>}
-              {profileError && <p className="error">{profileError}</p>}
-              {!profileLoading && clubs.length === 0 && (
-                <p className="no-data">You have not joined any clubs yet.</p>
-              )}
-
-              <div className="clubs-container">
-                {clubs.map((club) => (
-                  <div key={club.id} className="club-card">
-                    <div className="club-logo">
-                      {club.logo_url ? (
-                        <img src={club.logo_url} alt={club.name} />
-                      ) : (
-                        "🏢"
-                      )}
-                    </div>
-                    <div className="club-info">
-                      <h4>{club.name}</h4>
-                      <p>{club.description || "No description available"}</p>
-                      <div className="joined-date">
-                        Joined: {formatDate(club.joined_at)}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
