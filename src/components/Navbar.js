@@ -49,7 +49,7 @@ export default function Navbar() {
     if (isAdmin) {
       navigate("/admin-dashboard");
     } else {
-      navigate("/user-dashboard");
+      navigate("/UserProfile");
     }
   };
 
