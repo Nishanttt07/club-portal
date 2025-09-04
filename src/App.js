@@ -19,9 +19,7 @@ export default function App() {
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/user-dashboard" element={<UserDashboard />} />
 
-        {/* Profiles */}
-        <Route path="/user-profile" element={<UserProfile />} />
-        <Route path="/admin-profile" element={<AdminProfile />} />
+       
 
         {/* Login explicitly available */}
         <Route path="/login" element={<Login />} />
