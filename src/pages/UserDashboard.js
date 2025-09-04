@@ -1,218 +1,3 @@
-// import React, { useEffect, useState } from "react";
-// import { supabase } from "../supabaseClient";
-// import { useNavigate } from "react-router-dom";
-// import "./UserDashboard.css"; // Custom CSS for Instagram-like styling
-
-// export default function UserDashboard() {
-//   const [user, setUser] = useState(null);
-//   const [activeTab, setActiveTab] = useState("events"); // "events" | "announcements"
-//   const [events, setEvents] = useState([]);
-//   const [announcements, setAnnouncements] = useState([]);
-//   const navigate = useNavigate();
-
-//   useEffect(() => {
-//     const init = async () => {
-//       const {
-//         data: { user },
-//       } = await supabase.auth.getUser();
-//       if (!user) navigate("/login");
-//       setUser(user);
-
-//       fetchEvents();
-//       fetchAnnouncements();
-//     };
-//     init();
-//   }, [navigate]);
-
-//   const fetchEvents = async () => {
-//     let { data } = await supabase.from("events").select("*").order("date", { ascending: false });
-//     setEvents(data || []);
-//   };
-
-//   const fetchAnnouncements = async () => {
-//     let { data } = await supabase.from("announcements").select("*").order("created_at", { ascending: false });
-//     setAnnouncements(data || []);
-//   };
-
-//   const handleLogout = async () => {
-//     await supabase.auth.signOut();
-//     navigate("/login");
-//   };
-
-//   return (
-//     <div className="dashboard-container">
-//       <div className="dashboard-header">
-//         <h1>ClubHub Feed</h1>
-//         <div className="user-controls">
-//           <span className="welcome-text">Hi, {user?.email}</span>
-//           {/* <button className="logout-btn" onClick={handleLogout}>Logout</button> */}
-//         </div>
-//       </div>
-
-//       {/* Tabs */}
-//       <div className="tabs">
-//         <button 
-//           className={`tab-btn ${activeTab === "events" ? "active" : ""}`} 
-//           onClick={() => setActiveTab("events")}
-//         >
-//           Events
-//         </button>
-//         <button 
-//           className={`tab-btn ${activeTab === "announcements" ? "active" : ""}`} 
-//           onClick={() => setActiveTab("announcements")}
-//         >
-//           Announcements
-//         </button>
-//       </div>
-
-//       {/* Feed */}
-//       <div className="feed">
-//         {activeTab === "events" &&
-//           (events.length > 0 ? (
-//             events.map((event) => (
-//               <EventPost key={event.id} event={event} userId={user?.id} />
-//             ))
-//           ) : (
-//             <p className="no-data">No events yet.</p>
-//           ))}
-
-//         {activeTab === "announcements" &&
-//           (announcements.length > 0 ? (
-//             announcements.map((a) => (
-//               <AnnouncementPost key={a.id} announcement={a} userId={user?.id} />
-//             ))
-//           ) : (
-//             <p className="no-data">No announcements yet.</p>
-//           ))}
-//       </div>
-//     </div>
-//   );
-// }
-
-// /* ------------------ EVENT POST ------------------ */
-// function EventPost({ event, userId }) {
-//   const [likes, setLikes] = useState(0);
-//   const [userLiked, setUserLiked] = useState(false);
-
-//   useEffect(() => {
-//     fetchLikes();
-//   }, [event.id, userId]);
-
-//   const fetchLikes = async () => {
-//     const { count } = await supabase
-//       .from("event_likes")
-//       .select("*", { count: "exact" })
-//       .eq("event_id", event.id);
-//     setLikes(count || 0);
-
-//     if (userId) {
-//       const { data } = await supabase
-//         .from("event_likes")
-//         .select("id")
-//         .eq("event_id", event.id)
-//         .eq("user_id", userId)
-//         .maybeSingle();
-//       setUserLiked(!!data);
-//     }
-//   };
-
-//   const handleLike = async () => {
-//     if (!userId) return;
-//     if (userLiked) {
-//       await supabase.from("event_likes").delete().eq("event_id", event.id).eq("user_id", userId);
-//       setUserLiked(false);
-//       setLikes(likes - 1);
-//     } else {
-//       await supabase.from("event_likes").insert([{ event_id: event.id, user_id: userId }]);
-//       setUserLiked(true);
-//       setLikes(likes + 1);
-//     }
-//   };
-
-//   return (
-//     <div className="post-card">
-//       {event.image_url && <img src={event.image_url} alt={event.title} className="post-image" />}
-//       <div className="post-content">
-//         <h3 className="post-title">{event.title}</h3>
-//         <p className="post-description">{event.description}</p>
-//         <div className="post-meta">
-//           <span>{new Date(event.date).toLocaleDateString()} • {event.time}</span>
-//           <span>{event.venue}</span>
-//           {event.entry_fee && <span>Entry: {event.entry_fee > 0 ? `$${event.entry_fee}` : "Free"}</span>}
-//           {event.prize_pool && <span>Prize: {event.prize_pool}</span>}
-//         </div>
-//         <div className="post-actions">
-//           <button className={`like-btn ${userLiked ? "liked" : ""}`} onClick={handleLike}>
-//             {userLiked ? "❤️" : "🤍"} {likes}
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-// /* ------------------ ANNOUNCEMENT POST ------------------ */
-// function AnnouncementPost({ announcement, userId }) {
-//   const [likes, setLikes] = useState(0);
-//   const [userLiked, setUserLiked] = useState(false);
-
-//   useEffect(() => {
-//     fetchLikes();
-//   }, [announcement.id, userId]);
-
-//   const fetchLikes = async () => {
-//     const { count } = await supabase
-//       .from("announcement_likes")
-//       .select("*", { count: "exact" })
-//       .eq("announcement_id", announcement.id);
-//     setLikes(count || 0);
-
-//     if (userId) {
-//       const { data } = await supabase
-//         .from("announcement_likes")
-//         .select("id")
-//         .eq("announcement_id", announcement.id)
-//         .eq("user_id", userId)
-//         .maybeSingle();
-//       setUserLiked(!!data);
-//     }
-//   };
-
-//   const handleLike = async () => {
-//     if (!userId) return;
-//     if (userLiked) {
-//       await supabase.from("announcement_likes").delete().eq("announcement_id", announcement.id).eq("user_id", userId);
-//       setUserLiked(false);
-//       setLikes(likes - 1);
-//     } else {
-//       await supabase.from("announcement_likes").insert([{ announcement_id: announcement.id, user_id: userId }]);
-//       setUserLiked(true);
-//       setLikes(likes + 1);
-//     }
-//   };
-
-//   return (
-//     <div className="post-card">
-//       {announcement.image_url && <img src={announcement.image_url} alt={announcement.title} className="post-image" />}
-//       <div className="post-content">
-//         <h3 className="post-title">{announcement.title}</h3>
-//         <p className="post-description">{announcement.message}</p>
-//         {announcement.link && (
-//           <a href={announcement.link} target="_blank" rel="noreferrer" className="post-link">
-//             Learn more
-//           </a>
-//         )}
-//         <div className="post-actions">
-//           <button className={`like-btn ${userLiked ? "liked" : ""}`} onClick={handleLike}>
-//             {userLiked ? "❤️" : "🤍"} {likes}
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
@@ -220,9 +5,12 @@ import "./UserDashboard.css"; // Custom CSS for Instagram-like styling
 
 export default function UserDashboard() {
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState("events"); // "events" | "announcements"
+  const [activeTab, setActiveTab] = useState("events"); // "events" | "announcements" | "profile"
   const [events, setEvents] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
+  const [clubs, setClubs] = useState([]);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -258,6 +46,12 @@ export default function UserDashboard() {
     };
   }, [navigate]);
 
+  useEffect(() => {
+    if (activeTab === "profile" && user) {
+      fetchUserClubs();
+    }
+  }, [activeTab, user]);
+
   const fetchEvents = async () => {
     let { data } = await supabase.from("events").select("*").order("date", { ascending: false });
     setEvents(data || []);
@@ -268,9 +62,69 @@ export default function UserDashboard() {
     setAnnouncements(data || []);
   };
 
+  const fetchUserClubs = async () => {
+    setProfileLoading(true);
+    setProfileError("");
+    
+    try {
+      // Get memberships
+      const { data: memberships, error: membershipsError } = await supabase
+        .from("memberships")
+        .select("club_id, joined_at")
+        .eq("user_id", user.id);
+
+      if (membershipsError) throw membershipsError;
+
+      if (!memberships || memberships.length === 0) {
+        setClubs([]);
+        setProfileLoading(false);
+        return;
+      }
+
+      const clubIds = memberships.map(m => m.club_id);
+
+      // Get club details
+      const { data: clubsData, error: clubsError } = await supabase
+        .from("clubs")
+        .select("id, name, description, logo_url")
+        .in("id", clubIds);
+
+      if (clubsError) throw clubsError;
+
+      // Merge club + membership data
+      const merged = clubsData.map(club => {
+        const membership = memberships.find(m => m.club_id === club.id);
+        return {
+          ...club,
+          joined_at: membership.joined_at
+        };
+      });
+
+      setClubs(merged);
+    } catch (err) {
+      console.error("Error loading memberships:", err);
+      setProfileError("Failed to load your clubs. Please try again.");
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/login");
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const getInitial = (email) => {
+    return email ? email.charAt(0).toUpperCase() : "U";
   };
 
   return (
@@ -279,8 +133,7 @@ export default function UserDashboard() {
         <h1>ClubHub Feed</h1>
         <div className="user-controls">
           <span className="welcome-text">Hi, {user?.email}</span>
-          {/* Uncomment to allow logout button */}
-          {/* <button className="logout-btn" onClick={handleLogout}>Logout</button> */}
+          <button className="logout-btn" onClick={handleLogout}>Logout</button>
         </div>
       </div>
 
@@ -297,6 +150,12 @@ export default function UserDashboard() {
           onClick={() => setActiveTab("announcements")}
         >
           Announcements
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === "profile" ? "active" : ""}`} 
+          onClick={() => setActiveTab("profile")}
+        >
+          Profile
         </button>
       </div>
 
@@ -319,6 +178,52 @@ export default function UserDashboard() {
           ) : (
             <p className="no-data">No announcements yet.</p>
           ))}
+        
+        {activeTab === "profile" && user && (
+          <div className="profile-section">
+            <div className="profile-header">
+              <div className="avatar">{getInitial(user.email)}</div>
+              <div className="profile-info">
+                <h2>{user.email}</h2>
+                <p>Joined: {formatDate(user.created_at)}</p>
+              </div>
+            </div>
+
+            <div className="clubs-section">
+              <h3>My Clubs</h3>
+
+              {profileLoading && <p className="loading">Loading clubs...</p>}
+              {profileError && <p className="error">{profileError}</p>}
+              {!profileLoading && clubs.length === 0 && (
+                <p className="no-data">You have not joined any clubs yet.</p>
+              )}
+
+              <div className="clubs-container">
+                {clubs.map((club) => (
+                  <div key={club.id} className="club-card">
+                    <div className="club-logo">
+                      {club.logo_url ? (
+                        <img
+                          src={club.logo_url}
+                          alt={club.name}
+                        />
+                      ) : (
+                        "🏢"
+                      )}
+                    </div>
+                    <div className="club-info">
+                      <h4>{club.name}</h4>
+                      <p>{club.description || "No description available"}</p>
+                      <div className="joined-date">
+                        Joined: {formatDate(club.joined_at)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

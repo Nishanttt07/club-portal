@@ -126,6 +126,7 @@ export default function UserProfile() {
             {!loading && clubs.length === 0 && (
               <p>You have not joined any clubs yet.</p>
             )}
+            
 
             <div className="clubs-container">
               {clubs.map((club) => (
