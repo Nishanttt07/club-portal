@@ -1341,7 +1341,7 @@ export default function UserDashboard() {
       {/* Header */}
       <header className="dashboard-header">
         <div className="header-left">
-          <h1 className="app-logo">ClubHub</h1>
+          <h1 className="app-logo">ClubHub User</h1>
         </div>
         
         <div className="header-right">
