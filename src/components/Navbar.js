@@ -1,3 +1,4 @@
+// Navbar.js
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
@@ -15,14 +16,13 @@ export default function Navbar() {
       } = await supabase.auth.getUser();
       setUser(user);
 
-      // Check if user is admin (adjust this based on your admin detection logic)
       if (user && user.user_metadata?.isAdmin) {
         setIsAdmin(true);
       }
     };
     getUser();
 
-    // Listen to auth state changes (login / logout)
+    // Listen to auth state changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -30,14 +30,27 @@ export default function Navbar() {
       setIsAdmin(session?.user?.user_metadata?.isAdmin || false);
     });
 
-    // Cleanup subscription
     return () => {
       subscription.unsubscribe();
     };
   }, []);
 
+  // Redirect based on role (profile)
   const handleProfileClick = () => {
-    navigate("/profile");
+    if (isAdmin) {
+      navigate("/admin-profile");
+    } else {
+      navigate("/user-profile");
+    }
+  };
+
+  // Redirect based on role (dashboard)
+  const handleDashboardClick = () => {
+    if (isAdmin) {
+      navigate("/admin-dashboard");
+    } else {
+      navigate("/user-dashboard");
+    }
   };
 
   const handleNotificationsClick = () => {
@@ -60,8 +73,8 @@ export default function Navbar() {
     >
       {user && (
         <>
-          {/* Left side - Profile */}
-          <div style={{ display: "flex", alignItems: "center" }}>
+          {/* Left side - Profile + Dashboard */}
+          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
             <button
               onClick={handleProfileClick}
               style={{
@@ -75,9 +88,23 @@ export default function Navbar() {
             >
               👤 Profile
             </button>
+
+            <button
+              onClick={handleDashboardClick}
+              style={{
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                fontWeight: "bold",
+              }}
+            >
+              📊 Dashboard
+            </button>
           </div>
 
-          {/* Right side - Notifications, Chatbot (if not admin) */}
+          {/* Right side - Notifications + Chatbot */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <button
               onClick={handleNotificationsClick}
