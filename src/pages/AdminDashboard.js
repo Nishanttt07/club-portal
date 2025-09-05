@@ -1054,14 +1054,16 @@
 //     </div>
 //   );
 // }
-
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 
 export default function AdminDashboard() {
   const [user, setUser] = useState(null);
+  const [clubId, setClubId] = useState(null);
   const [events, setEvents] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
+
+  // Event state
   const [newEvent, setNewEvent] = useState({
     title: "",
     description: "",
@@ -1071,8 +1073,11 @@ export default function AdminDashboard() {
     entry_fee: "",
     prize_pool: "",
     image_url: "",
+    link: "",
     registration_link: "",
   });
+
+  // Announcement state
   const [newAnnouncement, setNewAnnouncement] = useState({
     title: "",
     message: "",
@@ -1080,60 +1085,74 @@ export default function AdminDashboard() {
     link: "",
   });
 
-  // Fetch logged in user
+  // Get logged in user + their club
   useEffect(() => {
-    const getUser = async () => {
+    const init = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       setUser(user);
+
+      if (user) {
+        // Fetch the club for which this user is the admin
+        const { data: clubData, error } = await supabase
+          .from("clubs")
+          .select("id")
+          .eq("admin_user_id", user.id)
+          .single();
+
+        if (error) {
+          console.error("Error fetching club ID:", error.message);
+        } else if (clubData) {
+          setClubId(clubData.id);
+        }
+      }
     };
-    getUser();
+    init();
   }, []);
 
-  // Fetch events & announcements
+  // Fetch events & announcements for this club
   useEffect(() => {
-    if (user) {
+    if (clubId) {
       fetchEvents();
       fetchAnnouncements();
     }
-  }, [user]);
+  }, [clubId]);
 
   const fetchEvents = async () => {
     const { data, error } = await supabase
       .from("events")
       .select("*")
+      .eq("club_id", clubId)
       .order("date", { ascending: true });
 
-    if (error) {
-      console.error("Error fetching events:", error.message);
-    } else {
-      setEvents(data);
-    }
+    if (error) console.error("Error fetching events:", error.message);
+    else setEvents(data);
   };
 
   const fetchAnnouncements = async () => {
     const { data, error } = await supabase
       .from("announcements")
       .select("*")
+      .eq("club_id", clubId)
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("Error fetching announcements:", error.message);
-    } else {
-      setAnnouncements(data);
-    }
+    if (error) console.error("Error fetching announcements:", error.message);
+    else setAnnouncements(data);
   };
 
   // Create Event
   const handleCreateEvent = async () => {
-    if (!user) return;
+    if (!user || !clubId) {
+      alert("User or club not found.");
+      return;
+    }
 
     const { error } = await supabase.from("events").insert([
       {
         ...newEvent,
         created_by: user.id,
-        club_id: "YOUR_CLUB_ID_HERE", // Replace with actual club id logic
+        club_id: clubId,
       },
     ]);
 
@@ -1141,7 +1160,7 @@ export default function AdminDashboard() {
       console.error("Error saving event:", error.message);
       alert("Error saving event: " + error.message);
     } else {
-      alert("Event created successfully!");
+      alert("✅ Event created successfully!");
       fetchEvents();
       setNewEvent({
         title: "",
@@ -1152,6 +1171,7 @@ export default function AdminDashboard() {
         entry_fee: "",
         prize_pool: "",
         image_url: "",
+        link: "",
         registration_link: "",
       });
     }
@@ -1159,13 +1179,16 @@ export default function AdminDashboard() {
 
   // Create Announcement
   const handleCreateAnnouncement = async () => {
-    if (!user) return;
+    if (!user || !clubId) {
+      alert("User or club not found.");
+      return;
+    }
 
     const { error } = await supabase.from("announcements").insert([
       {
         ...newAnnouncement,
         created_by: user.id,
-        club_id: "YOUR_CLUB_ID_HERE", // Replace with actual club id logic
+        club_id: clubId,
       },
     ]);
 
@@ -1173,7 +1196,7 @@ export default function AdminDashboard() {
       console.error("Error saving announcement:", error.message);
       alert("Error saving announcement: " + error.message);
     } else {
-      alert("Announcement created successfully!");
+      alert("✅ Announcement created successfully!");
       fetchAnnouncements();
       setNewAnnouncement({
         title: "",
@@ -1188,139 +1211,170 @@ export default function AdminDashboard() {
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
 
-      {/* Event Creation */}
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">Create Event</h2>
-        <input
-          type="text"
-          placeholder="Title"
-          value={newEvent.title}
-          onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-        />
-        <textarea
-          placeholder="Description"
-          value={newEvent.description}
-          onChange={(e) =>
-            setNewEvent({ ...newEvent, description: e.target.value })
-          }
-        />
-        <input
-          type="date"
-          value={newEvent.date}
-          onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
-        />
-        <input
-          type="time"
-          value={newEvent.time}
-          onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Venue"
-          value={newEvent.venue}
-          onChange={(e) => setNewEvent({ ...newEvent, venue: e.target.value })}
-        />
-        <input
-          type="number"
-          placeholder="Entry Fee"
-          value={newEvent.entry_fee}
-          onChange={(e) =>
-            setNewEvent({ ...newEvent, entry_fee: e.target.value })
-          }
-        />
-        <input
-          type="text"
-          placeholder="Prize Pool"
-          value={newEvent.prize_pool}
-          onChange={(e) =>
-            setNewEvent({ ...newEvent, prize_pool: e.target.value })
-          }
-        />
-        <input
-          type="text"
-          placeholder="Image URL"
-          value={newEvent.image_url}
-          onChange={(e) =>
-            setNewEvent({ ...newEvent, image_url: e.target.value })
-          }
-        />
-        <input
-          type="text"
-          placeholder="Registration Link"
-          value={newEvent.registration_link}
-          onChange={(e) =>
-            setNewEvent({
-              ...newEvent,
-              registration_link: e.target.value,
-            })
-          }
-        />
-        <button onClick={handleCreateEvent}>Save Event</button>
-      </div>
+      {!clubId ? (
+        <p className="text-red-500">⚠️ No club found for this admin user.</p>
+      ) : (
+        <>
+          {/* Event Creation */}
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-2">Create Event</h2>
+            <input
+              type="text"
+              placeholder="Title"
+              value={newEvent.title}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, title: e.target.value })
+              }
+            />
+            <textarea
+              placeholder="Description"
+              value={newEvent.description}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, description: e.target.value })
+              }
+            />
+            <input
+              type="date"
+              value={newEvent.date}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, date: e.target.value })
+              }
+            />
+            <input
+              type="time"
+              value={newEvent.time}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, time: e.target.value })
+              }
+            />
+            <input
+              type="text"
+              placeholder="Venue"
+              value={newEvent.venue}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, venue: e.target.value })
+              }
+            />
+            <input
+              type="number"
+              placeholder="Entry Fee"
+              value={newEvent.entry_fee}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, entry_fee: e.target.value })
+              }
+            />
+            <input
+              type="text"
+              placeholder="Prize Pool"
+              value={newEvent.prize_pool}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, prize_pool: e.target.value })
+              }
+            />
+            <input
+              type="text"
+              placeholder="Image URL"
+              value={newEvent.image_url}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, image_url: e.target.value })
+              }
+            />
+            <input
+              type="text"
+              placeholder="Event Link"
+              value={newEvent.link}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, link: e.target.value })
+              }
+            />
+            <input
+              type="text"
+              placeholder="Registration Link"
+              value={newEvent.registration_link}
+              onChange={(e) =>
+                setNewEvent({
+                  ...newEvent,
+                  registration_link: e.target.value,
+                })
+              }
+            />
+            <button onClick={handleCreateEvent}>Save Event</button>
+          </div>
 
-      {/* Announcement Creation */}
-      <div>
-        <h2 className="text-xl font-semibold mb-2">Create Announcement</h2>
-        <input
-          type="text"
-          placeholder="Title"
-          value={newAnnouncement.title}
-          onChange={(e) =>
-            setNewAnnouncement({ ...newAnnouncement, title: e.target.value })
-          }
-        />
-        <textarea
-          placeholder="Message"
-          value={newAnnouncement.message}
-          onChange={(e) =>
-            setNewAnnouncement({ ...newAnnouncement, message: e.target.value })
-          }
-        />
-        <input
-          type="text"
-          placeholder="Image URL"
-          value={newAnnouncement.image_url}
-          onChange={(e) =>
-            setNewAnnouncement({
-              ...newAnnouncement,
-              image_url: e.target.value,
-            })
-          }
-        />
-        <input
-          type="text"
-          placeholder="Link"
-          value={newAnnouncement.link}
-          onChange={(e) =>
-            setNewAnnouncement({ ...newAnnouncement, link: e.target.value })
-          }
-        />
-        <button onClick={handleCreateAnnouncement}>Save Announcement</button>
-      </div>
+          {/* Announcement Creation */}
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Create Announcement</h2>
+            <input
+              type="text"
+              placeholder="Title"
+              value={newAnnouncement.title}
+              onChange={(e) =>
+                setNewAnnouncement({ ...newAnnouncement, title: e.target.value })
+              }
+            />
+            <textarea
+              placeholder="Message"
+              value={newAnnouncement.message}
+              onChange={(e) =>
+                setNewAnnouncement({
+                  ...newAnnouncement,
+                  message: e.target.value,
+                })
+              }
+            />
+            <input
+              type="text"
+              placeholder="Image URL"
+              value={newAnnouncement.image_url}
+              onChange={(e) =>
+                setNewAnnouncement({
+                  ...newAnnouncement,
+                  image_url: e.target.value,
+                })
+              }
+            />
+            <input
+              type="text"
+              placeholder="Link"
+              value={newAnnouncement.link}
+              onChange={(e) =>
+                setNewAnnouncement({
+                  ...newAnnouncement,
+                  link: e.target.value,
+                })
+              }
+            />
+            <button onClick={handleCreateAnnouncement}>
+              Save Announcement
+            </button>
+          </div>
 
-      {/* List of Events */}
-      <div className="mt-6">
-        <h2 className="text-xl font-semibold">Existing Events</h2>
-        <ul>
-          {events.map((event) => (
-            <li key={event.id}>
-              {event.title} - {event.date} ({event.registration_link})
-            </li>
-          ))}
-        </ul>
-      </div>
+          {/* List of Events */}
+          <div className="mt-6">
+            <h2 className="text-xl font-semibold">Existing Events</h2>
+            <ul>
+              {events.map((event) => (
+                <li key={event.id}>
+                  {event.title} - {event.date} (
+                  {event.registration_link || "No registration link"})
+                </li>
+              ))}
+            </ul>
+          </div>
 
-      {/* List of Announcements */}
-      <div className="mt-6">
-        <h2 className="text-xl font-semibold">Existing Announcements</h2>
-        <ul>
-          {announcements.map((ann) => (
-            <li key={ann.id}>
-              {ann.title} - {ann.message}
-            </li>
-          ))}
-        </ul>
-      </div>
+          {/* List of Announcements */}
+          <div className="mt-6">
+            <h2 className="text-xl font-semibold">Existing Announcements</h2>
+            <ul>
+              {announcements.map((ann) => (
+                <li key={ann.id}>
+                  {ann.title} - {ann.message}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
+      )}
     </div>
   );
 }
