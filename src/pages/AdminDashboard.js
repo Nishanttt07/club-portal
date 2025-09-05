@@ -1,1067 +1,19 @@
-// import React, { useEffect, useState } from "react";
-// import { supabase } from "../supabaseClient";
-// import { useNavigate } from "react-router-dom";
-// import "./AdminDashboard.css";
-
-// // Custom hook for authentication state
-// function useAuth() {
-//   const [user, setUser] = useState(null);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     const getSession = async () => {
-//       const { data: { session } } = await supabase.auth.getSession();
-//       setUser(session?.user ?? null);
-//       setLoading(false);
-//     };
-
-//     getSession();
-
-//     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-//       async (event, session) => {
-//         setUser(session?.user ?? null);
-//         setLoading(false);
-//       }
-//     );
-
-//     return () => subscription.unsubscribe();
-//   }, []);
-
-//   return { user, loading };
-// }
-
-// // Custom hook for club data
-// function useClubData(user) {
-//   const [club, setClub] = useState(null);
-//   const [events, setEvents] = useState([]);
-//   const [announcements, setAnnouncements] = useState([]);
-//   const [members, setMembers] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     if (!user) return;
-
-//     const fetchClubData = async () => {
-//       try {
-//         // Fetch club
-//         let { data: clubData, error: clubError } = await supabase
-//           .from("clubs")
-//           .select("*")
-//           .eq("admin_user_id", user.id)
-//           .single();
-
-//         if (clubError) {
-//           console.error("Error fetching club:", clubError);
-//           setLoading(false);
-//           return;
-//         }
-
-//         setClub(clubData);
-
-//         if (clubData) {
-//           // Fetch events, announcements, and members in parallel
-//           await Promise.all([
-//             fetchEvents(clubData.id),
-//             fetchAnnouncements(clubData.id),
-//             fetchMembers(clubData.id)
-//           ]);
-//         }
-        
-//         setLoading(false);
-//       } catch (error) {
-//         console.error("Error fetching club data:", error);
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchClubData();
-//   }, [user]);
-
-//   const fetchEvents = async (clubId) => {
-//     let { data, error } = await supabase
-//       .from("events")
-//       .select("*")
-//       .eq("club_id", clubId)
-//       .order("created_at", { ascending: false });
-    
-//     if (error) {
-//       console.error("Error fetching events:", error);
-//       return;
-//     }
-    
-//     setEvents(data || []);
-//   };
-
-//   const fetchAnnouncements = async (clubId) => {
-//     let { data, error } = await supabase
-//       .from("announcements")
-//       .select("*")
-//       .eq("club_id", clubId)
-//       .order("created_at", { ascending: false });
-    
-//     if (error) {
-//       console.error("Error fetching announcements:", error);
-//       return;
-//     }
-    
-//     setAnnouncements(data || []);
-//   };
-
-//   const fetchMembers = async (clubId) => {
-//     let { data: memberships, error: membershipError } = await supabase
-//       .from("memberships")
-//       .select("id, joined_at, user_id")
-//       .eq("club_id", clubId);
-
-//     if (membershipError) {
-//       console.error("Error fetching memberships:", membershipError);
-//       return;
-//     }
-
-//     if (!memberships) return;
-
-//     // Fetch user emails directly from auth.users using RPC
-//     const memberList = await Promise.all(
-//       memberships.map(async (m) => {
-//         try {
-//           // Try to get user email from auth
-//           const { data: userData, error: userError } = await supabase
-//             .from("users")
-//             .select("email")
-//             .eq("id", m.user_id)
-//             .single();
-          
-//           if (userError) {
-//             console.error("Error fetching user:", userError);
-//             return {
-//               ...m,
-//               email: "Unknown",
-//             };
-//           }
-          
-//           return {
-//             ...m,
-//             email: userData?.email || "Unknown",
-//           };
-//         } catch (error) {
-//           console.error("Error processing member:", error);
-//           return {
-//             ...m,
-//             email: "Unknown",
-//           };
-//         }
-//       })
-//     );
-
-//     setMembers(memberList);
-//   };
-
-//   return {
-//     club,
-//     events,
-//     announcements,
-//     members,
-//     loading,
-//     fetchEvents,
-//     fetchAnnouncements,
-//     fetchMembers
-//   };
-// }
-
-// // Modal Component
-// function Modal({ show, onClose, title, children }) {
-//   if (!show) return null;
-
-//   return (
-//     <div className="modal-overlay" onClick={onClose}>
-//       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-//         <div className="modal-header">
-//           <h3>{title}</h3>
-//           <button className="modal-close" onClick={onClose}>×</button>
-//         </div>
-//         <div className="modal-body">
-//           {children}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-// // Logout Confirmation Modal
-// function LogoutModal({ show, onCancel, onConfirm }) {
-//   return (
-//     <Modal show={show} onClose={onCancel} title="Confirm Logout">
-//       <p>Are you sure you want to log out?</p>
-//       <div className="modal-buttons">
-//         <button className="modal-button cancel" onClick={onCancel}>
-//           Cancel
-//         </button>
-//         <button className="modal-button confirm" onClick={onConfirm}>
-//           Log Out
-//         </button>
-//       </div>
-//     </Modal>
-//   );
-// }
-
-// // Club Profile Form
-// function ClubForm({ club, onSubmit, formData, onFormChange, onCancel }) {
-//   return (
-//     <form onSubmit={onSubmit}>
-//       <div className="form-grid">
-//         <div className="form-group">
-//           <label>Club Name</label>
-//           <input
-//             type="text"
-//             className="form-input"
-//             placeholder="Club Name"
-//             value={formData.name}
-//             onChange={(e) => onFormChange('name', e.target.value)}
-//             required
-//           />
-//         </div>
-//         <div className="form-group">
-//           <label>Description</label>
-//           <textarea
-//             className="form-input"
-//             placeholder="Description"
-//             value={formData.description}
-//             onChange={(e) => onFormChange('description', e.target.value)}
-//             rows="3"
-//           />
-//         </div>
-//         <div className="form-group">
-//           <label>Logo URL</label>
-//           <input
-//             type="text"
-//             className="form-input"
-//             placeholder="Logo URL"
-//             value={formData.logo_url}
-//             onChange={(e) => onFormChange('logo_url', e.target.value)}
-//           />
-//         </div>
-//       </div>
-//       <div className="form-actions">
-//         <button type="button" className="form-cancel" onClick={onCancel}>
-//           Cancel
-//         </button>
-//         <button type="submit" className="form-submit">
-//           {club ? "Update Club" : "Create Club"}
-//         </button>
-//       </div>
-//     </form>
-//   );
-// }
-
-// // Event Form
-// function EventForm({ onSubmit, formData, onFormChange, onCancel, isEditing }) {
-//   return (
-//     <form onSubmit={onSubmit}>
-//       <div className="form-grid">
-//         <div className="form-group">
-//           <label>Title</label>
-//           <input
-//             type="text"
-//             className="form-input"
-//             placeholder="Title"
-//             value={formData.title}
-//             onChange={(e) => onFormChange('title', e.target.value)}
-//             required
-//           />
-//         </div>
-//         <div className="form-group">
-//           <label>Date</label>
-//           <input
-//             type="date"
-//             className="form-input"
-//             value={formData.date}
-//             onChange={(e) => onFormChange('date', e.target.value)}
-//             required
-//           />
-//         </div>
-//         <div className="form-group">
-//           <label>Time</label>
-//           <input
-//             type="time"
-//             className="form-input"
-//             value={formData.time}
-//             onChange={(e) => onFormChange('time', e.target.value)}
-//           />
-//         </div>
-//         <div className="form-group">
-//           <label>Venue</label>
-//           <input
-//             type="text"
-//             className="form-input"
-//             placeholder="Venue"
-//             value={formData.venue}
-//             onChange={(e) => onFormChange('venue', e.target.value)}
-//           />
-//         </div>
-//         <div className="form-group">
-//           <label>Description</label>
-//           <textarea
-//             className="form-input"
-//             placeholder="Description"
-//             value={formData.description}
-//             onChange={(e) => onFormChange('description', e.target.value)}
-//             rows="3"
-//           />
-//         </div>
-//         <div className="form-group">
-//           <label>Entry Fee</label>
-//           <input
-//             type="number"
-//             step="0.01"
-//             className="form-input"
-//             placeholder="Entry Fee"
-//             value={formData.entry_fee}
-//             onChange={(e) => onFormChange('entry_fee', e.target.value)}
-//           />
-//         </div>
-//         <div className="form-group">
-//           <label>Prize Pool</label>
-//           <input
-//             type="text"
-//             className="form-input"
-//             placeholder="Prize Pool"
-//             value={formData.prize_pool}
-//             onChange={(e) => onFormChange('prize_pool', e.target.value)}
-//           />
-//         </div>
-//         <div className="form-group">
-//           <label>Image URL</label>
-//           <input
-//             type="text"
-//             className="form-input"
-//             placeholder="Image URL"
-//             value={formData.image_url}
-//             onChange={(e) => onFormChange('image_url', e.target.value)}
-//           />
-//         </div>
-//         <div className="form-group">
-//           <label>Registration Link</label>
-//           <input
-//             type="text"
-//             className="form-input"
-//             placeholder="Registration/Google Form Link"
-//             value={formData.registration_link}
-//             onChange={(e) => onFormChange('registration_link', e.target.value)}
-//           />
-//         </div>
-//       </div>
-//       <div className="form-actions">
-//         <button type="button" className="form-cancel" onClick={onCancel}>
-//           Cancel
-//         </button>
-//         <button type="submit" className="form-submit">
-//           {isEditing ? "Update Event" : "Add Event"}
-//         </button>
-//       </div>
-//     </form>
-//   );
-// }
-
-// // Announcement Form
-// function AnnouncementForm({ onSubmit, formData, onFormChange, onCancel, isEditing }) {
-//   return (
-//     <form onSubmit={onSubmit}>
-//       <div className="form-grid">
-//         <div className="form-group">
-//           <label>Title</label>
-//           <input
-//             type="text"
-//             className="form-input"
-//             placeholder="Title"
-//             value={formData.title}
-//             onChange={(e) => onFormChange('title', e.target.value)}
-//             required
-//           />
-//         </div>
-//         <div className="form-group">
-//           <label>Message</label>
-//           <textarea
-//             className="form-input"
-//             placeholder="Message"
-//             value={formData.message}
-//             onChange={(e) => onFormChange('message', e.target.value)}
-//             rows="3"
-//             required
-//           />
-//         </div>
-//         <div className="form-group">
-//           <label>Image URL</label>
-//           <input
-//             type="text"
-//             className="form-input"
-//             placeholder="Image URL"
-//             value={formData.image_url}
-//             onChange={(e) => onFormChange('image_url', e.target.value)}
-//           />
-//         </div>
-//         <div className="form-group">
-//           <label>Link</label>
-//           <input
-//             type="text"
-//             className="form-input"
-//             placeholder="Link"
-//             value={formData.link}
-//             onChange={(e) => onFormChange('link', e.target.value)}
-//           />
-//         </div>
-//       </div>
-//       <div className="form-actions">
-//         <button type="button" className="form-cancel" onClick={onCancel}>
-//           Cancel
-//         </button>
-//         <button type="submit" className="form-submit">
-//           {isEditing ? "Update Announcement" : "Add Announcement"}
-//         </button>
-//       </div>
-//     </form>
-//   );
-// }
-
-// // Section Component
-// function Section({ title, count, expanded, onToggle, children }) {
-//   return (
-//     <div className="section">
-//       <div className="collapsible-header" onClick={onToggle}>
-//         <h3>{title}{count !== undefined && ` (${count})`}</h3>
-//         <span className={`toggle-icon ${expanded ? "expanded" : ""}`}>▼</span>
-//       </div>
-//       <div className={`collapsible-content ${expanded ? "expanded" : ""}`}>
-//         {children}
-//       </div>
-//     </div>
-//   );
-// }
-
-// // Main AdminDashboard Component
-// export default function AdminDashboard() {
-//   const { user, loading: authLoading } = useAuth();
-//   const {
-//     club,
-//     events,
-//     announcements,
-//     members,
-//     loading: dataLoading,
-//     fetchEvents,
-//     fetchAnnouncements,
-//     fetchMembers
-//   } = useClubData(user);
-  
-//   const [expandedSections, setExpandedSections] = useState({
-//     club: true,
-//     events: true,
-//     announcements: true,
-//     members: true,
-//   });
-//   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-//   const [isSubmitting, setIsSubmitting] = useState(false);
-//   const [showClubModal, setShowClubModal] = useState(false);
-//   const [showEventModal, setShowEventModal] = useState(false);
-//   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
-//   const [editingEvent, setEditingEvent] = useState(null);
-//   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
-
-//   // Club form state
-//   const [clubForm, setClubForm] = useState({
-//     name: "",
-//     description: "",
-//     logo_url: ""
-//   });
-
-//   // Event form state
-//   const [eventForm, setEventForm] = useState({
-//     title: "",
-//     date: "",
-//     time: "",
-//     venue: "",
-//     description: "",
-//     entry_fee: "",
-//     prize_pool: "",
-//     image_url: "",
-//     registration_link: ""
-//   });
-
-//   // Announcement form state
-//   const [announcementForm, setAnnouncementForm] = useState({
-//     title: "",
-//     message: "",
-//     image_url: "",
-//     link: ""
-//   });
-
-//   const navigate = useNavigate();
-
-//   useEffect(() => {
-//     if (!authLoading && !user) {
-//       navigate("/login");
-//       return;
-//     }
-
-//     if (club) {
-//       setClubForm({
-//         name: club.name || "",
-//         description: club.description || "",
-//         logo_url: club.logo_url || ""
-//       });
-//     }
-
-//     // Handle back button
-//     const handleBackButton = (e) => {
-//       e.preventDefault();
-//       setShowLogoutConfirm(true);
-      
-//       // Push state again to keep user on the same page
-//       window.history.pushState(null, null, window.location.pathname);
-//     };
-
-//     window.history.pushState(null, null, window.location.pathname);
-//     window.addEventListener('popstate', handleBackButton);
-
-//     return () => {
-//       window.removeEventListener('popstate', handleBackButton);
-//     };
-//   }, [user, authLoading, club, navigate]);
-
-//   const handleLogout = async () => {
-//     await supabase.auth.signOut();
-//     navigate("/login");
-//   };
-
-//   const toggleSection = (section) => {
-//     setExpandedSections((prev) => ({
-//       ...prev,
-//       [section]: !prev[section],
-//     }));
-//   };
-
-//   const updateFormData = (setter) => (field, value) => {
-//     setter(prev => ({ ...prev, [field]: value }));
-//   };
-
-//   // Open club modal for editing
-//   const openClubModal = () => {
-//     if (club) {
-//       setClubForm({
-//         name: club.name || "",
-//         description: club.description || "",
-//         logo_url: club.logo_url || ""
-//       });
-//     }
-//     setShowClubModal(true);
-//   };
-
-//   // Open event modal for adding or editing
-//   const openEventModal = (event = null) => {
-//     if (event) {
-//       setEventForm({
-//         title: event.title || "",
-//         date: event.date || "",
-//         time: event.time || "",
-//         venue: event.venue || "",
-//         description: event.description || "",
-//         entry_fee: event.entry_fee || "",
-//         prize_pool: event.prize_pool || "",
-//         image_url: event.image_url || "",
-//         registration_link: event.registration_link || ""
-//       });
-//       setEditingEvent(event);
-//     } else {
-//       setEventForm({
-//         title: "",
-//         date: "",
-//         time: "",
-//         venue: "",
-//         description: "",
-//         entry_fee: "",
-//         prize_pool: "",
-//         image_url: "",
-//         registration_link: ""
-//       });
-//       setEditingEvent(null);
-//     }
-//     setShowEventModal(true);
-//   };
-
-//   // Open announcement modal for adding or editing
-//   const openAnnouncementModal = (announcement = null) => {
-//     if (announcement) {
-//       setAnnouncementForm({
-//         title: announcement.title || "",
-//         message: announcement.message || "",
-//         image_url: announcement.image_url || "",
-//         link: announcement.link || ""
-//       });
-//       setEditingAnnouncement(announcement);
-//     } else {
-//       setAnnouncementForm({
-//         title: "",
-//         message: "",
-//         image_url: "",
-//         link: ""
-//       });
-//       setEditingAnnouncement(null);
-//     }
-//     setShowAnnouncementModal(true);
-//   };
-
-//   // Save or update club profile
-//   const saveClub = async (e) => {
-//     e.preventDefault();
-//     setIsSubmitting(true);
-    
-//     try {
-//       if (club) {
-//         const { error } = await supabase
-//           .from("clubs")
-//           .update({
-//             name: clubForm.name,
-//             description: clubForm.description,
-//             logo_url: clubForm.logo_url,
-//           })
-//           .eq("id", club.id);
-        
-//         if (error) throw error;
-//         alert("Club updated successfully!");
-//       } else {
-//         const { data, error } = await supabase
-//           .from("clubs")
-//           .insert([
-//             {
-//               name: clubForm.name,
-//               description: clubForm.description,
-//               logo_url: clubForm.logo_url,
-//               admin_user_id: user.id,
-//             },
-//           ])
-//           .select()
-//           .single();
-        
-//         if (error) throw error;
-//         alert("Club created successfully!");
-//         window.location.reload(); // Reload to fetch new club data
-//       }
-//       setShowClubModal(false);
-//     } catch (error) {
-//       console.error("Error saving club:", error);
-//       alert("Error saving club. Please try again.");
-//     } finally {
-//       setIsSubmitting(false);
-//     }
-//   };
-
-//   // Add or update event
-//   const saveEvent = async (e) => {
-//     e.preventDefault();
-//     setIsSubmitting(true);
-    
-//     try {
-//       if (!club) {
-//         alert("No club found. Please create a club first.");
-//         return;
-//       }
-      
-//       // Convert entry_fee to decimal if it exists
-//       const entryFee = eventForm.entry_fee ? parseFloat(eventForm.entry_fee) : null;
-      
-//       if (editingEvent) {
-//         // Update existing event
-//         const { error } = await supabase
-//           .from("events")
-//           .update({
-//             title: eventForm.title,
-//             date: eventForm.date,
-//             time: eventForm.time,
-//             venue: eventForm.venue,
-//             description: eventForm.description,
-//             entry_fee: entryFee,
-//             prize_pool: eventForm.prize_pool,
-//             image_url: eventForm.image_url,
-//             registration_link: eventForm.registration_link,
-//           })
-//           .eq("id", editingEvent.id);
-        
-//         if (error) throw error;
-//         alert("Event updated successfully!");
-//       } else {
-//         // Add new event - include created_by field as required by the table schema
-//         const { error } = await supabase.from("events").insert([
-//           {
-//             title: eventForm.title,
-//             date: eventForm.date,
-//             time: eventForm.time,
-//             venue: eventForm.venue,
-//             description: eventForm.description,
-//             entry_fee: entryFee,
-//             prize_pool: eventForm.prize_pool,
-//             image_url: eventForm.image_url,
-//             registration_link: eventForm.registration_link,
-//             club_id: club.id,
-//             created_by: user.id, // Added this required field
-//           },
-//         ]);
-        
-//         if (error) throw error;
-//         alert("Event added successfully!");
-//       }
-      
-//       // Reset form and refresh events
-//       setEventForm({
-//         title: "",
-//         date: "",
-//         time: "",
-//         venue: "",
-//         description: "",
-//         entry_fee: "",
-//         prize_pool: "",
-//         image_url: "",
-//         registration_link: ""
-//       });
-      
-//       fetchEvents(club.id);
-//       setShowEventModal(false);
-//       setEditingEvent(null);
-//     } catch (error) {
-//       console.error("Error saving event:", error);
-//       alert(`Error saving event: ${error.message}`);
-//     } finally {
-//       setIsSubmitting(false);
-//     }
-//   };
-
-//   const deleteEvent = async (id) => {
-//     if (window.confirm("Are you sure you want to delete this event?")) {
-//       try {
-//         const { error } = await supabase.from("events").delete().eq("id", id);
-//         if (error) throw error;
-//         fetchEvents(club.id);
-//         alert("Event deleted successfully!");
-//       } catch (error) {
-//         console.error("Error deleting event:", error);
-//         alert("Error deleting event. Please try again.");
-//       }
-//     }
-//   };
-
-//   // Add or update announcement
-//   const saveAnnouncement = async (e) => {
-//     e.preventDefault();
-//     setIsSubmitting(true);
-    
-//     try {
-//       if (!club) {
-//         alert("No club found. Please create a club first.");
-//         return;
-//       }
-      
-//       if (editingAnnouncement) {
-//         // Update existing announcement
-//         const { error } = await supabase
-//           .from("announcements")
-//           .update({
-//             title: announcementForm.title,
-//             message: announcementForm.message,
-//             image_url: announcementForm.image_url,
-//             link: announcementForm.link,
-//           })
-//           .eq("id", editingAnnouncement.id);
-        
-//         if (error) throw error;
-//         alert("Announcement updated successfully!");
-//       } else {
-//         // Add new announcement
-//         const { error } = await supabase.from("announcements").insert([
-//           {
-//             title: announcementForm.title,
-//             message: announcementForm.message,
-//             image_url: announcementForm.image_url,
-//             link: announcementForm.link,
-//             club_id: club.id,
-//           },
-//         ]);
-        
-//         if (error) throw error;
-//         alert("Announcement added successfully!");
-//       }
-      
-//       // Reset form and refresh announcements
-//       setAnnouncementForm({
-//         title: "",
-//         message: "",
-//         image_url: "",
-//         link: ""
-//       });
-      
-//       fetchAnnouncements(club.id);
-//       setShowAnnouncementModal(false);
-//       setEditingAnnouncement(null);
-//     } catch (error) {
-//       console.error("Error saving announcement:", error);
-//       alert("Error saving announcement. Please try again.");
-//     } finally {
-//       setIsSubmitting(false);
-//     }
-//   };
-
-//   const deleteAnnouncement = async (id) => {
-//     if (window.confirm("Are you sure you want to delete this announcement?")) {
-//       try {
-//         const { error } = await supabase.from("announcements").delete().eq("id", id);
-//         if (error) throw error;
-//         fetchAnnouncements(club.id);
-//         alert("Announcement deleted successfully!");
-//       } catch (error) {
-//         console.error("Error deleting announcement:", error);
-//         alert("Error deleting announcement. Please try again.");
-//       }
-//     }
-//   };
-
-//   // Remove member
-//   const removeMember = async (membershipId, email) => {
-//     if (window.confirm(`Are you sure you want to remove ${email} from the club?`)) {
-//       try {
-//         const { error } = await supabase.from("memberships").delete().eq("id", membershipId);
-//         if (error) throw error;
-//         fetchMembers(club.id);
-//         alert("Member removed successfully!");
-//       } catch (error) {
-//         console.error("Error removing member:", error);
-//         alert("Error removing member. Please try again.");
-//       }
-//     }
-//   };
-
-//   if (authLoading || dataLoading) {
-//     return (
-//       <div className="admin-dashboard loading">
-//         <div className="loading-spinner"></div>
-//         <p>Loading dashboard...</p>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="admin-dashboard">
-//       <LogoutModal
-//         show={showLogoutConfirm}
-//         onCancel={() => setShowLogoutConfirm(false)}
-//         onConfirm={handleLogout}
-//       />
-
-//       {/* Club Profile Modal */}
-//       <Modal show={showClubModal} onClose={() => setShowClubModal(false)} title="Club Profile">
-//         <ClubForm
-//           club={club}
-//           onSubmit={saveClub}
-//           formData={clubForm}
-//           onFormChange={updateFormData(setClubForm)}
-//           onCancel={() => setShowClubModal(false)}
-//         />
-//       </Modal>
-
-//       {/* Event Modal */}
-//       <Modal show={showEventModal} onClose={() => setShowEventModal(false)} title={editingEvent ? "Edit Event" : "Add Event"}>
-//         <EventForm
-//           onSubmit={saveEvent}
-//           formData={eventForm}
-//           onFormChange={updateFormData(setEventForm)}
-//           onCancel={() => setShowEventModal(false)}
-//           isEditing={!!editingEvent}
-//         />
-//       </Modal>
-
-//       {/* Announcement Modal */}
-//       <Modal show={showAnnouncementModal} onClose={() => setShowAnnouncementModal(false)} title={editingAnnouncement ? "Edit Announcement" : "Add Announcement"}>
-//         <AnnouncementForm
-//           onSubmit={saveAnnouncement}
-//           formData={announcementForm}
-//           onFormChange={updateFormData(setAnnouncementForm)}
-//           onCancel={() => setShowAnnouncementModal(false)}
-//           isEditing={!!editingAnnouncement}
-//         />
-//       </Modal>
-
-//       <div className="dashboard-header">
-//         <h2>Club Admin Dashboard</h2>
-//         <div className="header-controls">
-//           {club && (
-//             <button className="profile-btn" onClick={openClubModal}>
-//               Club Profile
-//             </button>
-//           )}
-//           <button className="logout-btn" onClick={() => setShowLogoutConfirm(true)}>
-//             Logout
-//           </button>
-//         </div>
-//       </div>
-
-//       <p className="welcome-text">Welcome, {user?.email}</p>
-
-//       {club && (
-//         <div className="stats-grid">
-//           <div className="stat-card">
-//             <p className="stat-value">{events.length}</p>
-//             <p className="stat-label">Events</p>
-//           </div>
-//           <div className="stat-card">
-//             <p className="stat-value">{announcements.length}</p>
-//             <p className="stat-label">Announcements</p>
-//           </div>
-//           <div className="stat-card">
-//             <p className="stat-value">{members.length}</p>
-//             <p className="stat-label">Members</p>
-//           </div>
-//         </div>
-//       )}
-
-//       {club && (
-//         <>
-//           {/* Events Section */}
-//           <Section
-//             title="Manage Events"
-//             count={events.length}
-//             expanded={expandedSections.events}
-//             onToggle={() => toggleSection("events")}
-//           >
-//             <button className="add-btn" onClick={() => openEventModal()}>
-//               Add New Event
-//             </button>
-
-//             <div className="items-list">
-//               {events.map((event) => (
-//                 <div key={event.id} className="item-card event-card">
-//                   <h4 className="item-title">{event.title}</h4>
-//                   <p className="item-details">
-//                     {event.date} {event.time} at {event.venue}
-//                     {event.description && (
-//                       <>
-//                         <br />
-//                         {event.description}
-//                       </>
-//                     )}
-//                     {event.registration_link && (
-//                       <>
-//                         <br />
-//                         <a href={event.registration_link} target="_blank" rel="noopener noreferrer">
-//                           Registration Link
-//                         </a>
-//                       </>
-//                     )}
-//                   </p>
-//                   <div className="item-actions">
-//                     <button
-//                       className="edit-btn"
-//                       onClick={() => openEventModal(event)}
-//                     >
-//                       Edit
-//                     </button>
-//                     <button
-//                       className="delete-btn"
-//                       onClick={() => deleteEvent(event.id)}
-//                       disabled={isSubmitting}
-//                     >
-//                       Delete
-//                     </button>
-//                   </div>
-//                 </div>
-//               ))}
-//             </div>
-//           </Section>
-
-//           {/* Announcements Section */}
-//           <Section
-//             title="Manage Announcements"
-//             count={announcements.length}
-//             expanded={expandedSections.announcements}
-//             onToggle={() => toggleSection("announcements")}
-//           >
-//             <button className="add-btn" onClick={() => openAnnouncementModal()}>
-//               Add New Announcement
-//             </button>
-
-//             <div className="items-list">
-//               {announcements.map((a) => (
-//                 <div key={a.id} className="item-card announcement-card">
-//                   <h4 className="item-title">{a.title}</h4>
-//                   <p className="item-details">{a.message}</p>
-//                   <div className="item-actions">
-//                     <button
-//                       className="edit-btn"
-//                       onClick={() => openAnnouncementModal(a)}
-//                     >
-//                       Edit
-//                     </button>
-//                     <button
-//                       className="delete-btn"
-//                       onClick={() => deleteAnnouncement(a.id)}
-//                       disabled={isSubmitting}
-//                     >
-//                       Delete
-//                     </button>
-//                   </div>
-//                 </div>
-//               ))}
-//             </div>
-//           </Section>
-
-//           {/* Members Section */}
-//           <Section
-//             title="Club Members"
-//             count={members.length}
-//             expanded={expandedSections.members}
-//             onToggle={() => toggleSection("members")}
-//           >
-//             <div className="items-list">
-//               {members.map((m) => (
-//                 <div key={m.id} className="item-card member-card">
-//                   <h4 className="item-title">{m.email}</h4>
-//                   <p className="item-details">
-//                     Joined: {new Date(m.joined_at).toLocaleDateString()}
-//                   </p>
-//                   <button
-//                     className="delete-btn"
-//                     onClick={() => removeMember(m.id, m.email)}
-//                     disabled={isSubmitting}
-//                   >
-//                     Remove
-//                   </button>
-//                 </div>
-//               ))}
-//             </div>
-//           </Section>
-//         </>
-//       )}
-
-//       {!club && (
-//         <Section
-//           title="Create Your Club"
-//           expanded={expandedSections.club}
-//           onToggle={() => toggleSection("club")}
-//         >
-//           <ClubForm
-//             club={club}
-//             onSubmit={saveClub}
-//             formData={clubForm}
-//             onFormChange={updateFormData(setClubForm)}
-//             onCancel={() => {}}
-//           />
-//         </Section>
-//       )}
-//     </div>
-//   );
-// }
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
+import { format } from 'date-fns';
 
 export default function AdminDashboard() {
+  const [activeTab, setActiveTab] = useState("events");
   const [user, setUser] = useState(null);
   const [clubId, setClubId] = useState(null);
+  const [clubInfo, setClubInfo] = useState(null);
   const [events, setEvents] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
+  const [members, setMembers] = useState([]);
+  const [profiles, setProfiles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [editingAnnouncement, setEditingAnnouncement] = useState(null);
 
   // Event state
   const [newEvent, setNewEvent] = useState({
@@ -1075,6 +27,7 @@ export default function AdminDashboard() {
     image_url: "",
     link: "",
     registration_link: "",
+    published: true
   });
 
   // Announcement state
@@ -1083,21 +36,30 @@ export default function AdminDashboard() {
     message: "",
     image_url: "",
     link: "",
+    pinned: false
   });
+
+  // Club state
+  const [clubForm, setClubForm] = useState({
+    name: "",
+    description: "",
+    logo_url: ""
+  });
+
+  // Member state
+  const [newMemberEmail, setNewMemberEmail] = useState("");
 
   // Get logged in user + their club
   useEffect(() => {
     const init = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
 
       if (user) {
         // Fetch the club for which this user is the admin
         const { data: clubData, error } = await supabase
           .from("clubs")
-          .select("id")
+          .select("*")
           .eq("admin_user_id", user.id)
           .single();
 
@@ -1105,19 +67,34 @@ export default function AdminDashboard() {
           console.error("Error fetching club ID:", error.message);
         } else if (clubData) {
           setClubId(clubData.id);
+          setClubInfo(clubData);
+          setClubForm({
+            name: clubData.name || "",
+            description: clubData.description || "",
+            logo_url: clubData.logo_url || ""
+          });
         }
       }
     };
     init();
   }, []);
 
-  // Fetch events & announcements for this club
+  // Fetch data when tab changes or clubId is available
   useEffect(() => {
     if (clubId) {
-      fetchEvents();
-      fetchAnnouncements();
+      if (activeTab === "events") {
+        fetchEvents();
+      } else if (activeTab === "announcements") {
+        fetchAnnouncements();
+      } else if (activeTab === "members") {
+        fetchMembers();
+      } else if (activeTab === "profiles") {
+        fetchProfiles();
+      } else if (activeTab === "club") {
+        fetchClubStats();
+      }
     }
-  }, [clubId]);
+  }, [activeTab, clubId]);
 
   const fetchEvents = async () => {
     const { data, error } = await supabase
@@ -1135,19 +112,75 @@ export default function AdminDashboard() {
       .from("announcements")
       .select("*")
       .eq("club_id", clubId)
+      .order("pinned", { ascending: false })
       .order("created_at", { ascending: false });
 
     if (error) console.error("Error fetching announcements:", error.message);
     else setAnnouncements(data);
   };
 
-  // Create Event
+  const fetchMembers = async () => {
+    const { data, error } = await supabase
+      .from("memberships")
+      .select(`
+        *,
+        profiles (*)
+      `)
+      .eq("club_id", clubId);
+
+    if (error) console.error("Error fetching members:", error.message);
+    else setMembers(data);
+  };
+
+  const fetchProfiles = async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) console.error("Error fetching profiles:", error.message);
+    else setProfiles(data);
+  };
+
+  const fetchClubStats = async () => {
+    // Get total members
+    const { count: memberCount, error: memberError } = await supabase
+      .from("memberships")
+      .select("*", { count: "exact" })
+      .eq("club_id", clubId);
+
+    // Get total events
+    const { count: eventCount, error: eventError } = await supabase
+      .from("events")
+      .select("*", { count: "exact" })
+      .eq("club_id", clubId);
+
+    // Get active announcements
+    const { count: announcementCount, error: announcementError } = await supabase
+      .from("announcements")
+      .select("*", { count: "exact" })
+      .eq("club_id", clubId);
+
+    if (memberError || eventError || announcementError) {
+      console.error("Error fetching club stats");
+    } else {
+      setClubInfo(prev => ({
+        ...prev,
+        memberCount,
+        eventCount,
+        announcementCount
+      }));
+    }
+  };
+
+  // Event CRUD operations
   const handleCreateEvent = async () => {
     if (!user || !clubId) {
       alert("User or club not found.");
       return;
     }
 
+    setLoading(true);
     const { error } = await supabase.from("events").insert([
       {
         ...newEvent,
@@ -1173,17 +206,76 @@ export default function AdminDashboard() {
         image_url: "",
         link: "",
         registration_link: "",
+        published: true
       });
     }
+    setLoading(false);
   };
 
-  // Create Announcement
+  const handleUpdateEvent = async () => {
+    if (!editingEvent) return;
+
+    setLoading(true);
+    const { error } = await supabase
+      .from("events")
+      .update(editingEvent)
+      .eq("id", editingEvent.id);
+
+    if (error) {
+      console.error("Error updating event:", error.message);
+      alert("Error updating event: " + error.message);
+    } else {
+      alert("✅ Event updated successfully!");
+      fetchEvents();
+      setEditingEvent(null);
+    }
+    setLoading(false);
+  };
+
+  const handleDeleteEvent = async (id) => {
+    if (!confirm("Are you sure you want to delete this event?")) return;
+
+    setLoading(true);
+    const { error } = await supabase
+      .from("events")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error deleting event:", error.message);
+      alert("Error deleting event: " + error.message);
+    } else {
+      alert("✅ Event deleted successfully!");
+      fetchEvents();
+    }
+    setLoading(false);
+  };
+
+  const toggleEventPublish = async (event) => {
+    setLoading(true);
+    const { error } = await supabase
+      .from("events")
+      .update({ published: !event.published })
+      .eq("id", event.id);
+
+    if (error) {
+      console.error("Error toggling event publish status:", error.message);
+      alert("Error updating event: " + error.message);
+    } else {
+      alert(`✅ Event ${!event.published ? 'published' : 'unpublished'} successfully!`);
+      fetchEvents();
+    }
+    setLoading(false);
+  };
+
+  // Announcement CRUD operations
   const handleCreateAnnouncement = async () => {
     if (!user || !clubId) {
       alert("User or club not found.");
       return;
     }
 
+    setLoading(true);
     const { error } = await supabase.from("announcements").insert([
       {
         ...newAnnouncement,
@@ -1203,178 +295,1003 @@ export default function AdminDashboard() {
         message: "",
         image_url: "",
         link: "",
+        pinned: false
       });
     }
+    setLoading(false);
   };
 
+  const handleUpdateAnnouncement = async () => {
+    if (!editingAnnouncement) return;
+
+    setLoading(true);
+    const { error } = await supabase
+      .from("announcements")
+      .update(editingAnnouncement)
+      .eq("id", editingAnnouncement.id);
+
+    if (error) {
+      console.error("Error updating announcement:", error.message);
+      alert("Error updating announcement: " + error.message);
+    } else {
+      alert("✅ Announcement updated successfully!");
+      fetchAnnouncements();
+      setEditingAnnouncement(null);
+    }
+    setLoading(false);
+  };
+
+  const handleDeleteAnnouncement = async (id) => {
+    if (!confirm("Are you sure you want to delete this announcement?")) return;
+
+    setLoading(true);
+    const { error } = await supabase
+      .from("announcements")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error deleting announcement:", error.message);
+      alert("Error deleting announcement: " + error.message);
+    } else {
+      alert("✅ Announcement deleted successfully!");
+      fetchAnnouncements();
+    }
+    setLoading(false);
+  };
+
+  const toggleAnnouncementPin = async (announcement) => {
+    setLoading(true);
+    const { error } = await supabase
+      .from("announcements")
+      .update({ pinned: !announcement.pinned })
+      .eq("id", announcement.id);
+
+    if (error) {
+      console.error("Error toggling announcement pin status:", error.message);
+      alert("Error updating announcement: " + error.message);
+    } else {
+      alert(`✅ Announcement ${!announcement.pinned ? 'pinned' : 'unpinned'} successfully!`);
+      fetchAnnouncements();
+    }
+    setLoading(false);
+  };
+
+  // Club operations
+  const handleUpdateClub = async () => {
+    if (!clubId) return;
+
+    setLoading(true);
+    const { error } = await supabase
+      .from("clubs")
+      .update(clubForm)
+      .eq("id", clubId);
+
+    if (error) {
+      console.error("Error updating club:", error.message);
+      alert("Error updating club: " + error.message);
+    } else {
+      alert("✅ Club updated successfully!");
+      // Refresh club info
+      const { data } = await supabase
+        .from("clubs")
+        .select("*")
+        .eq("id", clubId)
+        .single();
+      setClubInfo(data);
+    }
+    setLoading(false);
+  };
+
+  const handleDeleteClub = async () => {
+    if (!confirm("Are you sure you want to delete this club? This action cannot be undone.")) return;
+
+    setLoading(true);
+    const { error } = await supabase
+      .from("clubs")
+      .delete()
+      .eq("id", clubId);
+
+    if (error) {
+      console.error("Error deleting club:", error.message);
+      alert("Error deleting club: " + error.message);
+    } else {
+      alert("✅ Club deleted successfully!");
+      setClubId(null);
+      setClubInfo(null);
+    }
+    setLoading(false);
+  };
+
+  // Member operations
+  const handleAddMember = async () => {
+    if (!newMemberEmail) {
+      alert("Please enter an email address");
+      return;
+    }
+
+    setLoading(true);
+    // First check if user exists
+    const { data: userData, error: userError } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("email", newMemberEmail)
+      .single();
+
+    if (userError || !userData) {
+      alert("User with this email does not exist");
+      setLoading(false);
+      return;
+    }
+
+    // Check if user is already a member
+    const { data: existingMember, error: checkError } = await supabase
+      .from("memberships")
+      .select("*")
+      .eq("club_id", clubId)
+      .eq("user_id", userData.id)
+      .single();
+
+    if (existingMember) {
+      alert("This user is already a member of the club");
+      setLoading(false);
+      return;
+    }
+
+    // Add member
+    const { error } = await supabase
+      .from("memberships")
+      .insert([
+        {
+          club_id: clubId,
+          user_id: userData.id,
+          joined_at: new Date().toISOString()
+        }
+      ]);
+
+    if (error) {
+      console.error("Error adding member:", error.message);
+      alert("Error adding member: " + error.message);
+    } else {
+      alert("✅ Member added successfully!");
+      setNewMemberEmail("");
+      fetchMembers();
+    }
+    setLoading(false);
+  };
+
+  const handleRemoveMember = async (userId) => {
+    if (!confirm("Are you sure you want to remove this member?")) return;
+
+    setLoading(true);
+    const { error } = await supabase
+      .from("memberships")
+      .delete()
+      .eq("club_id", clubId)
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("Error removing member:", error.message);
+      alert("Error removing member: " + error.message);
+    } else {
+      alert("✅ Member removed successfully!");
+      fetchMembers();
+    }
+    setLoading(false);
+  };
+
+  const exportMembersToCSV = () => {
+    const csvContent = [
+      ["Name", "Email", "Joined At"],
+      ...members.map(member => [
+        member.profiles?.full_name || "N/A",
+        member.profiles?.email || "N/A",
+        format(new Date(member.joined_at), "PPpp")
+      ])
+    ].map(e => e.join(",")).join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "club_members.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Profile operations
+  const handleUpdateProfileRole = async (profileId, newRole) => {
+    setLoading(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ role: newRole })
+      .eq("id", profileId);
+
+    if (error) {
+      console.error("Error updating profile:", error.message);
+      alert("Error updating profile: " + error.message);
+    } else {
+      alert("✅ Profile updated successfully!");
+      fetchProfiles();
+    }
+    setLoading(false);
+  };
+
+  const handleSuspendProfile = async (profileId, suspend) => {
+    setLoading(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ suspended: suspend })
+      .eq("id", profileId);
+
+    if (error) {
+      console.error("Error updating profile:", error.message);
+      alert("Error updating profile: " + error.message);
+    } else {
+      alert(`✅ Profile ${suspend ? 'suspended' : 'activated'} successfully!`);
+      fetchProfiles();
+    }
+    setLoading(false);
+  };
+
+  const handleDeleteProfile = async (profileId) => {
+    if (!confirm("Are you sure you want to delete this profile? This action cannot be undone.")) return;
+
+    setLoading(true);
+    const { error } = await supabase
+      .from("profiles")
+      .delete()
+      .eq("id", profileId);
+
+    if (error) {
+      console.error("Error deleting profile:", error.message);
+      alert("Error deleting profile: " + error.message);
+    } else {
+      alert("✅ Profile deleted successfully!");
+      fetchProfiles();
+    }
+    setLoading(false);
+  };
+
+  // Render loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
-
-      {!clubId ? (
-        <p className="text-red-500">⚠️ No club found for this admin user.</p>
-      ) : (
-        <>
-          {/* Event Creation */}
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-2">Create Event</h2>
-            <input
-              type="text"
-              placeholder="Title"
-              value={newEvent.title}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, title: e.target.value })
-              }
-            />
-            <textarea
-              placeholder="Description"
-              value={newEvent.description}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, description: e.target.value })
-              }
-            />
-            <input
-              type="date"
-              value={newEvent.date}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, date: e.target.value })
-              }
-            />
-            <input
-              type="time"
-              value={newEvent.time}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, time: e.target.value })
-              }
-            />
-            <input
-              type="text"
-              placeholder="Venue"
-              value={newEvent.venue}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, venue: e.target.value })
-              }
-            />
-            <input
-              type="number"
-              placeholder="Entry Fee"
-              value={newEvent.entry_fee}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, entry_fee: e.target.value })
-              }
-            />
-            <input
-              type="text"
-              placeholder="Prize Pool"
-              value={newEvent.prize_pool}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, prize_pool: e.target.value })
-              }
-            />
-            <input
-              type="text"
-              placeholder="Image URL"
-              value={newEvent.image_url}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, image_url: e.target.value })
-              }
-            />
-            <input
-              type="text"
-              placeholder="Event Link"
-              value={newEvent.link}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, link: e.target.value })
-              }
-            />
-            <input
-              type="text"
-              placeholder="Registration Link"
-              value={newEvent.registration_link}
-              onChange={(e) =>
-                setNewEvent({
-                  ...newEvent,
-                  registration_link: e.target.value,
-                })
-              }
-            />
-            <button onClick={handleCreateEvent}>Save Event</button>
+    <div className="min-h-screen bg-gray-100">
+      {/* Navigation Tabs */}
+      <div className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex">
+              <div className="flex-shrink-0 flex items-center">
+                <h1 className="text-xl font-bold">Admin Dashboard</h1>
+              </div>
+              <nav className="hidden sm:ml-6 sm:flex">
+                {["events", "announcements", "club", "members", "profiles"].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`${
+                      activeTab === tab
+                        ? "border-indigo-500 text-gray-900"
+                        : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                    } capitalize inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </nav>
+            </div>
+            <div className="flex items-center">
+              <span className="text-sm text-gray-700">Club: {clubInfo?.name || "N/A"}</span>
+            </div>
           </div>
+        </div>
+      </div>
 
-          {/* Announcement Creation */}
-          <div>
-            <h2 className="text-xl font-semibold mb-2">Create Announcement</h2>
-            <input
-              type="text"
-              placeholder="Title"
-              value={newAnnouncement.title}
-              onChange={(e) =>
-                setNewAnnouncement({ ...newAnnouncement, title: e.target.value })
-              }
-            />
-            <textarea
-              placeholder="Message"
-              value={newAnnouncement.message}
-              onChange={(e) =>
-                setNewAnnouncement({
-                  ...newAnnouncement,
-                  message: e.target.value,
-                })
-              }
-            />
-            <input
-              type="text"
-              placeholder="Image URL"
-              value={newAnnouncement.image_url}
-              onChange={(e) =>
-                setNewAnnouncement({
-                  ...newAnnouncement,
-                  image_url: e.target.value,
-                })
-              }
-            />
-            <input
-              type="text"
-              placeholder="Link"
-              value={newAnnouncement.link}
-              onChange={(e) =>
-                setNewAnnouncement({
-                  ...newAnnouncement,
-                  link: e.target.value,
-                })
-              }
-            />
-            <button onClick={handleCreateAnnouncement}>
-              Save Announcement
-            </button>
-          </div>
+      <div className="py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {!clubId ? (
+            <div className="bg-white rounded-lg shadow p-6">
+              <p className="text-red-500">⚠️ No club found for this admin user.</p>
+            </div>
+          ) : (
+            <>
+              {/* Events Tab */}
+              {activeTab === "events" && (
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                  <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+                    <h2 className="text-lg font-medium text-gray-900">Events Management</h2>
+                  </div>
+                  
+                  <div className="px-4 py-5 sm:p-6">
+                    {editingEvent ? (
+                      <div className="mb-8 bg-gray-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-medium mb-4">Edit Event</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          <input
+                            type="text"
+                            placeholder="Title"
+                            value={editingEvent.title}
+                            onChange={(e) => setEditingEvent({ ...editingEvent, title: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="date"
+                            value={editingEvent.date}
+                            onChange={(e) => setEditingEvent({ ...editingEvent, date: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="time"
+                            value={editingEvent.time}
+                            onChange={(e) => setEditingEvent({ ...editingEvent, time: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Venue"
+                            value={editingEvent.venue}
+                            onChange={(e) => setEditingEvent({ ...editingEvent, venue: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="number"
+                            placeholder="Entry Fee"
+                            value={editingEvent.entry_fee}
+                            onChange={(e) => setEditingEvent({ ...editingEvent, entry_fee: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Prize Pool"
+                            value={editingEvent.prize_pool}
+                            onChange={(e) => setEditingEvent({ ...editingEvent, prize_pool: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Image URL"
+                            value={editingEvent.image_url}
+                            onChange={(e) => setEditingEvent({ ...editingEvent, image_url: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Event Link"
+                            value={editingEvent.link}
+                            onChange={(e) => setEditingEvent({ ...editingEvent, link: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Registration Link"
+                            value={editingEvent.registration_link}
+                            onChange={(e) => setEditingEvent({ ...editingEvent, registration_link: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                        </div>
+                        <textarea
+                          placeholder="Description"
+                          value={editingEvent.description}
+                          onChange={(e) => setEditingEvent({ ...editingEvent, description: e.target.value })}
+                          className="border border-gray-300 rounded-md px-3 py-2 w-full mb-4"
+                          rows="3"
+                        />
+                        <div className="flex items-center mb-4">
+                          <input
+                            type="checkbox"
+                            checked={editingEvent.published}
+                            onChange={(e) => setEditingEvent({ ...editingEvent, published: e.target.checked })}
+                            className="mr-2"
+                            id="edit-published"
+                          />
+                          <label htmlFor="edit-published">Published</label>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button 
+                            onClick={handleUpdateEvent}
+                            className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                          >
+                            Update Event
+                          </button>
+                          <button 
+                            onClick={() => setEditingEvent(null)}
+                            className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mb-8 bg-gray-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-medium mb-4">Create New Event</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          <input
+                            type="text"
+                            placeholder="Title"
+                            value={newEvent.title}
+                            onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="date"
+                            value={newEvent.date}
+                            onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="time"
+                            value={newEvent.time}
+                            onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Venue"
+                            value={newEvent.venue}
+                            onChange={(e) => setNewEvent({ ...newEvent, venue: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="number"
+                            placeholder="Entry Fee"
+                            value={newEvent.entry_fee}
+                            onChange={(e) => setNewEvent({ ...newEvent, entry_fee: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Prize Pool"
+                            value={newEvent.prize_pool}
+                            onChange={(e) => setNewEvent({ ...newEvent, prize_pool: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Image URL"
+                            value={newEvent.image_url}
+                            onChange={(e) => setNewEvent({ ...newEvent, image_url: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Event Link"
+                            value={newEvent.link}
+                            onChange={(e) => setNewEvent({ ...newEvent, link: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Registration Link"
+                            value={newEvent.registration_link}
+                            onChange={(e) => setNewEvent({ ...newEvent, registration_link: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                        </div>
+                        <textarea
+                          placeholder="Description"
+                          value={newEvent.description}
+                          onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                          className="border border-gray-300 rounded-md px-3 py-2 w-full mb-4"
+                          rows="3"
+                        />
+                        <div className="flex items-center mb-4">
+                          <input
+                            type="checkbox"
+                            checked={newEvent.published}
+                            onChange={(e) => setNewEvent({ ...newEvent, published: e.target.checked })}
+                            className="mr-2"
+                            id="create-published"
+                          />
+                          <label htmlFor="create-published">Published</label>
+                        </div>
+                        <button 
+                          onClick={handleCreateEvent}
+                          className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                        >
+                          Create Event
+                        </button>
+                      </div>
+                    )}
 
-          {/* List of Events */}
-          <div className="mt-6">
-            <h2 className="text-xl font-semibold">Existing Events</h2>
-            <ul>
-              {events.map((event) => (
-                <li key={event.id}>
-                  {event.title} - {event.date} (
-                  {event.registration_link || "No registration link"})
-                </li>
-              ))}
-            </ul>
-          </div>
+                    <h3 className="text-lg font-medium mb-4">Existing Events</h3>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Venue</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {events.map((event) => (
+                            <tr key={event.id}>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-medium text-gray-900">{event.title}</div>
+                                <div className="text-sm text-gray-500">{event.description.substring(0, 50)}...</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900">{event.date}</div>
+                                <div className="text-sm text-gray-500">{event.time}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {event.venue}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${event.published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                  {event.published ? 'Published' : 'Draft'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button 
+                                  onClick={() => setEditingEvent(event)}
+                                  className="text-indigo-600 hover:text-indigo-900 mr-3"
+                                >
+                                  Edit
+                                </button>
+                                <button 
+                                  onClick={() => toggleEventPublish(event)}
+                                  className="text-yellow-600 hover:text-yellow-900 mr-3"
+                                >
+                                  {event.published ? 'Unpublish' : 'Publish'}
+                                </button>
+                                <button 
+                                  onClick={() => handleDeleteEvent(event.id)}
+                                  className="text-red-600 hover:text-red-900"
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-          {/* List of Announcements */}
-          <div className="mt-6">
-            <h2 className="text-xl font-semibold">Existing Announcements</h2>
-            <ul>
-              {announcements.map((ann) => (
-                <li key={ann.id}>
-                  {ann.title} - {ann.message}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </>
-      )}
+              {/* Announcements Tab */}
+              {activeTab === "announcements" && (
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                  <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+                    <h2 className="text-lg font-medium text-gray-900">Announcements Management</h2>
+                  </div>
+                  
+                  <div className="px-4 py-5 sm:p-6">
+                    {editingAnnouncement ? (
+                      <div className="mb-8 bg-gray-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-medium mb-4">Edit Announcement</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          <input
+                            type="text"
+                            placeholder="Title"
+                            value={editingAnnouncement.title}
+                            onChange={(e) => setEditingAnnouncement({ ...editingAnnouncement, title: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Image URL"
+                            value={editingAnnouncement.image_url}
+                            onChange={(e) => setEditingAnnouncement({ ...editingAnnouncement, image_url: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Link"
+                            value={editingAnnouncement.link}
+                            onChange={(e) => setEditingAnnouncement({ ...editingAnnouncement, link: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                        </div>
+                        <textarea
+                          placeholder="Message"
+                          value={editingAnnouncement.message}
+                          onChange={(e) => setEditingAnnouncement({ ...editingAnnouncement, message: e.target.value })}
+                          className="border border-gray-300 rounded-md px-3 py-2 w-full mb-4"
+                          rows="3"
+                        />
+                        <div className="flex items-center mb-4">
+                          <input
+                            type="checkbox"
+                            checked={editingAnnouncement.pinned}
+                            onChange={(e) => setEditingAnnouncement({ ...editingAnnouncement, pinned: e.target.checked })}
+                            className="mr-2"
+                            id="edit-pinned"
+                          />
+                          <label htmlFor="edit-pinned">Pinned</label>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button 
+                            onClick={handleUpdateAnnouncement}
+                            className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                          >
+                            Update Announcement
+                          </button>
+                          <button 
+                            onClick={() => setEditingAnnouncement(null)}
+                            className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mb-8 bg-gray-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-medium mb-4">Create New Announcement</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          <input
+                            type="text"
+                            placeholder="Title"
+                            value={newAnnouncement.title}
+                            onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Image URL"
+                            value={newAnnouncement.image_url}
+                            onChange={(e) => setNewAnnouncement({ ...newAnnouncement, image_url: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Link"
+                            value={newAnnouncement.link}
+                            onChange={(e) => setNewAnnouncement({ ...newAnnouncement, link: e.target.value })}
+                            className="border border-gray-300 rounded-md px-3 py-2"
+                          />
+                        </div>
+                        <textarea
+                          placeholder="Message"
+                          value={newAnnouncement.message}
+                          onChange={(e) => setNewAnnouncement({ ...newAnnouncement, message: e.target.value })}
+                          className="border border-gray-300 rounded-md px-3 py-2 w-full mb-4"
+                          rows="3"
+                        />
+                        <div className="flex items-center mb-4">
+                          <input
+                            type="checkbox"
+                            checked={newAnnouncement.pinned}
+                            onChange={(e) => setNewAnnouncement({ ...newAnnouncement, pinned: e.target.checked })}
+                            className="mr-2"
+                            id="create-pinned"
+                          />
+                          <label htmlFor="create-pinned">Pinned</label>
+                        </div>
+                        <button 
+                          onClick={handleCreateAnnouncement}
+                          className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                        >
+                          Create Announcement
+                        </button>
+                      </div>
+                    )}
+
+                    <h3 className="text-lg font-medium mb-4">Existing Announcements</h3>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {announcements.map((announcement) => (
+                            <tr key={announcement.id}>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-medium text-gray-900">{announcement.title}</div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="text-sm text-gray-900">{announcement.message.substring(0, 50)}...</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${announcement.pinned ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>
+                                  {announcement.pinned ? 'Pinned' : 'Normal'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button 
+                                  onClick={() => setEditingAnnouncement(announcement)}
+                                  className="text-indigo-600 hover:text-indigo-900 mr-3"
+                                >
+                                  Edit
+                                </button>
+                                <button 
+                                  onClick={() => toggleAnnouncementPin(announcement)}
+                                  className="text-yellow-600 hover:text-yellow-900 mr-3"
+                                >
+                                  {announcement.pinned ? 'Unpin' : 'Pin'}
+                                </button>
+                                <button 
+                                  onClick={() => handleDeleteAnnouncement(announcement.id)}
+                                  className="text-red-600 hover:text-red-900"
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Club Management Tab */}
+              {activeTab === "club" && (
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                  <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+                    <h2 className="text-lg font-medium text-gray-900">Club Management</h2>
+                  </div>
+                  
+                  <div className="px-4 py-5 sm:p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                      <div className="bg-indigo-100 p-4 rounded-lg">
+                        <h3 className="text-lg font-medium text-indigo-800">Total Members</h3>
+                        <p className="text-3xl font-bold text-indigo-900">{clubInfo?.memberCount || 0}</p>
+                      </div>
+                      <div className="bg-green-100 p-4 rounded-lg">
+                        <h3 className="text-lg font-medium text-green-800">Total Events</h3>
+                        <p className="text-3xl font-bold text-green-900">{clubInfo?.eventCount || 0}</p>
+                      </div>
+                      <div className="bg-purple-100 p-4 rounded-lg">
+                        <h3 className="text-lg font-medium text-purple-800">Active Announcements</h3>
+                        <p className="text-3xl font-bold text-purple-900">{clubInfo?.announcementCount || 0}</p>
+                      </div>
+                    </div>
+
+                    <div className="mb-8 bg-gray-50 p-4 rounded-lg">
+                      <h3 className="text-lg font-medium mb-4">Update Club Information</h3>
+                      <div className="grid grid-cols-1 gap-4 mb-4">
+                        <input
+                          type="text"
+                          placeholder="Club Name"
+                          value={clubForm.name}
+                          onChange={(e) => setClubForm({ ...clubForm, name: e.target.value })}
+                          className="border border-gray-300 rounded-md px-3 py-2"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Logo URL"
+                          value={clubForm.logo_url}
+                          onChange={(e) => setClubForm({ ...clubForm, logo_url: e.target.value })}
+                          className="border border-gray-300 rounded-md px-3 py-2"
+                        />
+                        <textarea
+                          placeholder="Description"
+                          value={clubForm.description}
+                          onChange={(e) => setClubForm({ ...clubForm, description: e.target.value })}
+                          className="border border-gray-300 rounded-md px-3 py-2 w-full"
+                          rows="3"
+                        />
+                      </div>
+                      <button 
+                        onClick={handleUpdateClub}
+                        className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 mr-3"
+                      >
+                        Update Club
+                      </button>
+                      <button 
+                        onClick={handleDeleteClub}
+                        className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                      >
+                        Delete Club
+                      </button>
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-medium mb-4">Club Information</h3>
+                      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                        <div className="px-4 py-5 sm:px-6">
+                          <h3 className="text-lg leading-6 font-medium text-gray-900">Club Profile</h3>
+                        </div>
+                        <div className="border-t border-gray-200">
+                          <dl>
+                            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                              <dt className="text-sm font-medium text-gray-500">Club name</dt>
+                              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{clubInfo?.name}</dd>
+                            </div>
+                            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                              <dt className="text-sm font-medium text-gray-500">Description</dt>
+                              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{clubInfo?.description}</dd>
+                            </div>
+                            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                              <dt className="text-sm font-medium text-gray-500">Logo</dt>
+                              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                {clubInfo?.logo_url ? (
+                                  <img src={clubInfo.logo_url} alt="Club Logo" className="h-16 w-16 object-contain" />
+                                ) : (
+                                  "No logo uploaded"
+                                )}
+                              </dd>
+                            </div>
+                            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                              <dt className="text-sm font-medium text-gray-500">Admin User ID</dt>
+                              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{clubInfo?.admin_user_id}</dd>
+                            </div>
+                            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                              <dt className="text-sm font-medium text-gray-500">Created At</dt>
+                              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                {clubInfo?.created_at ? format(new Date(clubInfo.created_at), "PPpp") : "N/A"}
+                              </dd>
+                            </div>
+                          </dl>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Members Tab */}
+              {activeTab === "members" && (
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                  <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+                    <h2 className="text-lg font-medium text-gray-900">Members Management</h2>
+                  </div>
+                  
+                  <div className="px-4 py-5 sm:p-6">
+                    <div className="mb-8 bg-gray-50 p-4 rounded-lg">
+                      <h3 className="text-lg font-medium mb-4">Add New Member</h3>
+                      <div className="flex">
+                        <input
+                          type="email"
+                          placeholder="Member Email"
+                          value={newMemberEmail}
+                          onChange={(e) => setNewMemberEmail(e.target.value)}
+                          className="border border-gray-300 rounded-md px-3 py-2 flex-grow mr-2"
+                        />
+                        <button 
+                          onClick={handleAddMember}
+                          className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                        >
+                          Add Member
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-medium">Club Members</h3>
+                      <button 
+                        onClick={exportMembersToCSV}
+                        className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+                      >
+                        Export to CSV
+                      </button>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined At</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {members.map((member) => (
+                            <tr key={member.id}>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-medium text-gray-900">{member.profiles?.full_name || "N/A"}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {member.profiles?.email || "N/A"}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {format(new Date(member.joined_at), "PPpp")}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button 
+                                  onClick={() => handleRemoveMember(member.user_id)}
+                                  className="text-red-600 hover:text-red-900"
+                                >
+                                  Remove
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Profiles Tab */}
+              {activeTab === "profiles" && (
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                  <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+                    <h2 className="text-lg font-medium text-gray-900">User Profiles Management</h2>
+                  </div>
+                  
+                  <div className="px-4 py-5 sm:p-6">
+                    <h3 className="text-lg font-medium mb-4">All User Profiles</h3>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {profiles.map((profile) => (
+                            <tr key={profile.id}>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-medium text-gray-900">{profile.full_name || "N/A"}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {profile.email}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <select 
+                                  value={profile.role || "user"} 
+                                  onChange={(e) => handleUpdateProfileRole(profile.id, e.target.value)}
+                                  className="border border-gray-300 rounded-md px-2 py-1"
+                                >
+                                  <option value="user">User</option>
+                                  <option value="admin">Admin</option>
+                                  <option value="moderator">Moderator</option>
+                                </select>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${profile.suspended ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                                  {profile.suspended ? 'Suspended' : 'Active'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {format(new Date(profile.created_at), "PPpp")}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button 
+                                  onClick={() => handleSuspendProfile(profile.id, !profile.suspended)}
+                                  className={`mr-3 ${profile.suspended ? 'text-green-600 hover:text-green-900' : 'text-yellow-600 hover:text-yellow-900'}`}
+                                >
+                                  {profile.suspended ? 'Activate' : 'Suspend'}
+                                </button>
+                                <button 
+                                  onClick={() => handleDeleteProfile(profile.id)}
+                                  className="text-red-600 hover:text-red-900"
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
