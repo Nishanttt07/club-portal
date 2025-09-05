@@ -312,6 +312,7 @@ function EventForm({ onSubmit, formData, onFormChange, onCancel, isEditing }) {
           <label>Entry Fee</label>
           <input
             type="number"
+            step="0.01"
             className="form-input"
             placeholder="Entry Fee"
             value={formData.entry_fee}
@@ -663,6 +664,9 @@ export default function AdminDashboard() {
         return;
       }
       
+      // Convert entry_fee to decimal if it exists
+      const entryFee = eventForm.entry_fee ? parseFloat(eventForm.entry_fee) : null;
+      
       if (editingEvent) {
         // Update existing event
         const { error } = await supabase
@@ -673,7 +677,7 @@ export default function AdminDashboard() {
             time: eventForm.time,
             venue: eventForm.venue,
             description: eventForm.description,
-            entry_fee: eventForm.entry_fee,
+            entry_fee: entryFee,
             prize_pool: eventForm.prize_pool,
             image_url: eventForm.image_url,
             registration_link: eventForm.registration_link,
@@ -683,7 +687,7 @@ export default function AdminDashboard() {
         if (error) throw error;
         alert("Event updated successfully!");
       } else {
-        // Add new event
+        // Add new event - include created_by field as required by the table schema
         const { error } = await supabase.from("events").insert([
           {
             title: eventForm.title,
@@ -691,11 +695,12 @@ export default function AdminDashboard() {
             time: eventForm.time,
             venue: eventForm.venue,
             description: eventForm.description,
-            entry_fee: eventForm.entry_fee,
+            entry_fee: entryFee,
             prize_pool: eventForm.prize_pool,
             image_url: eventForm.image_url,
             registration_link: eventForm.registration_link,
             club_id: club.id,
+            created_by: user.id, // Added this required field
           },
         ]);
         
@@ -721,7 +726,7 @@ export default function AdminDashboard() {
       setEditingEvent(null);
     } catch (error) {
       console.error("Error saving event:", error);
-      alert("Error saving event. Please try again.");
+      alert(`Error saving event: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
