@@ -1,335 +1,162 @@
 /* UserDashboard.css */
 
-/* General Styles */
+/* Base styles */
 .user-dashboard {
   min-height: 100vh;
-  background-color: #f5f7f9;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  grid-template-rows: auto 1fr;
-  grid-template-areas: 
-    "header header"
-    "sidebar main";
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5;
 }
 
-/* Header Styles */
+/* Header */
 .dashboard-header {
-  grid-area: header;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
-.header-left .app-logo {
-  color: #3b82f6;
-  font-size: 1.8rem;
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.app-logo {
+  font-size: 1.5rem;
   font-weight: bold;
-  margin: 0;
+  color: #3f51b5;
+}
+
+.left-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ai-btn {
+  padding: 0.5rem 1rem;
+  background-color: #3f51b5;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 1rem;
 }
 
-/* Sidebar */
-.dashboard-sidebar {
-  grid-area: sidebar;
-  background-color: #fff;
-  border-right: 1px solid #e5e7eb;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  overflow-y: auto;
-}
-
-/* Profile Section in Sidebar */
-.profile-section {
-  background-color: #f9fafb;
-  border-radius: 8px;
-  padding: 1.5rem;
-}
-
-.profile-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.profile-avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background-color: #680bab;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-.profile-info {
-  flex: 1;
-}
-
-.profile-name {
-  margin: 0 0 0.25rem 0;
-  color: #1f2937;
-  font-size: 1.1rem;
-}
-
-.profile-stats {
+.profile-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin: 0;
-  color: #6b7280;
-  font-size: 0.875rem;
-}
-
-.profile-tabs {
-  display: flex;
-  border-bottom: 1px solid #e5e7eb;
-  margin-bottom: 1rem;
-}
-
-.tab {
-  padding: 0.75rem 1rem;
+  padding: 0.5rem;
   background: none;
   border: none;
   cursor: pointer;
-  color: #6b7280;
-  transition: all 0.3s ease;
-  font-size: 0.9rem;
+  border-radius: 4px;
 }
 
-.tab:hover {
-  color: #3b82f6;
+.profile-btn:hover {
+  background-color: #f0f0f0;
 }
 
-.tab.active {
-  color: #3b82f6;
-  font-weight: 600;
-  box-shadow: inset 0 -2px 0 #3b82f6;
-}
-
-.tab-content {
-  padding: 0.5rem 0;
-}
-
-/* Clubs Grid in Sidebar */
-.clubs-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.club-card {
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 1rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border: 1px solid #e5e7eb;
-}
-
-.club-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-.club-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.club-logo {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  overflow: hidden;
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #3f51b5;
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #e5e7eb;
-  flex-shrink: 0;
-}
-
-.club-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.club-initials {
-  font-size: 1rem;
   font-weight: bold;
-  color: #6b7280;
 }
 
-.club-details {
-  flex: 1;
-}
-
-.club-name {
-  margin: 0 0 0.25rem 0;
-  color: #1f2937;
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-.club-description {
-  margin: 0;
-  color: #6b7280;
-  font-size: 0.8rem;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Logout Button */
-.logout-btn {
-  margin-top: 1.5rem;
-  padding: 0.75rem;
-  background-color: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-  width: 100%;
-  text-align: center;
-}
-
-.logout-btn:hover {
-  background-color: #dc2626;
-}
-
-/* Main Content */
+/* Main content */
 .dashboard-main {
-  grid-area: main;
-  padding: 2rem;
+  flex: 1;
+  padding: 1rem;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
 }
 
-/* Navigation Tabs */
 .dashboard-nav {
   display: flex;
-  background-color: #fff;
-  border-bottom: 1px solid #e5e7eb;
-  margin-bottom: 2rem;
-  border-radius: 8px 8px 0 0;
-  overflow: hidden;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .nav-tab {
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1.5rem;
   background: none;
   border: none;
   cursor: pointer;
   font-size: 1rem;
-  color: #6b7280;
+  color: #666;
   position: relative;
-  transition: all 0.3s ease;
-}
-
-.nav-tab:hover {
-  color: #3b82f6;
 }
 
 .nav-tab.active {
-  color: #3b82f6;
-  font-weight: 600;
+  color: #3f51b5;
+  font-weight: bold;
 }
 
 .nav-tab.active::after {
   content: '';
   position: absolute;
-  bottom: 0;
+  bottom: -1px;
   left: 0;
-  width: 100%;
-  height: 3px;
-  background-color: #3b82f6;
-  border-radius: 3px 3px 0 0;
+  right: 0;
+  height: 2px;
+  background-color: #3f51b5;
 }
 
-/* Feed Styles */
+/* Feed */
 .feed-container {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.empty-feed {
-  padding: 3rem 2rem;
-  text-align: center;
-  color: #6b7280;
-}
-
-.empty-feed h3 {
-  margin-bottom: 0.5rem;
-  color: #374151;
+  width: 100%;
 }
 
 .feed {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  padding: 1.5rem;
 }
 
 .feed-item {
-  background-color: #fff;
+  background-color: white;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.feed-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .feed-item-header {
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.club-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
 }
 
-.feed-club-info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.feed-club-name {
-  font-weight: 600;
-  color: #3b82f6;
+.club-name {
+  font-weight: bold;
+  color: #3f51b5;
 }
 
 .post-time {
-  font-size: 0.875rem;
-  color: #6b7280;
+  color: #666;
+  font-size: 0.9rem;
 }
 
 .feed-image {
@@ -345,138 +172,112 @@
 }
 
 .feed-content {
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
 .event-title, .announcement-title {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  color: #1f2937;
+  margin: 0 0 0.75rem 0;
+  color: #333;
 }
 
 .event-details {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  color: #6b7280;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .detail {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  font-size: 0.9rem;
 }
 
 .event-description, .announcement-message {
-  color: #4b5563;
-  line-height: 1.6;
-  margin-bottom: 1rem;
-}
-
-.event-description:not(.expanded), .announcement-message:not(.expanded) {
-  max-height: 4.8em;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
 }
 
 .read-more {
   background: none;
   border: none;
-  color: #3b82f6;
+  color: #3f51b5;
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   margin-left: 0.25rem;
-}
-
-.read-more:hover {
-  text-decoration: underline;
 }
 
 .event-stats {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .stat {
-  background-color: #f3f4f6;
   padding: 0.25rem 0.5rem;
+  background-color: #e8f5e9;
   border-radius: 4px;
-  font-size: 0.875rem;
-  color: #4b5563;
+  font-size: 0.9rem;
+  color: #2e7d32;
 }
 
 .registration-btn, .announcement-link {
   display: inline-block;
   padding: 0.5rem 1rem;
-  background-color: #3b82f6;
+  background-color: #3f51b5;
   color: white;
   text-decoration: none;
   border-radius: 4px;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
+  font-size: 0.9rem;
 }
 
-.registration-btn:hover, .announcement-link:hover {
-  background-color: #2563eb;
-}
-
-/* Explore Section */
+/* Explore section */
 .explore-section {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  width: 100%;
 }
 
 .section-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 1.5rem;
 }
 
 .section-header h2 {
   margin: 0 0 0.5rem 0;
-  color: #1f2937;
+  color: #333;
 }
 
 .section-header p {
   margin: 0;
-  color: #6b7280;
+  color: #666;
 }
 
 .explore-clubs-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1.5rem;
-  padding: 1.5rem;
 }
 
 .explore-club-card {
-  background-color: #f9fafb;
+  background-color: white;
   border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   padding: 1.5rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border: 1px solid #e5e7eb;
-}
-
-.explore-club-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .explore-club-logo {
-  width: 64px;
-  height: 64px;
-  border-radius: 8px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
   overflow: hidden;
   margin-bottom: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #e5e7eb;
+  background-color: #f0f0f0;
 }
 
 .explore-club-logo img {
@@ -486,90 +287,92 @@
 }
 
 .explore-club-initials {
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: bold;
-  color: #6b7280;
+  color: #3f51b5;
 }
 
 .explore-club-name {
   margin: 0 0 0.5rem 0;
-  color: #1f2937;
+  color: #333;
 }
 
 .explore-club-description {
   margin: 0 0 1rem 0;
-  color: #6b7280;
-  font-size: 0.875rem;
-  line-height: 1.5;
+  color: #666;
+  flex: 1;
 }
 
 .join-btn {
   padding: 0.5rem 1rem;
-  background-color: #10b981;
+  background-color: #3f51b5;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-  width: 100%;
-}
-
-.join-btn:hover:not(:disabled) {
-  background-color: #059669;
+  font-size: 0.9rem;
 }
 
 .join-btn.joined {
-  background-color: #6b7280;
-  cursor: default;
+  background-color: #4caf50;
 }
 
 .join-btn:disabled {
-  opacity: 0.7;
+  background-color: #ccc;
   cursor: not-allowed;
 }
 
-/* AI Assistant */
-.ai-assistant-btn {
-  padding: 0.5rem 1rem;
-  background-color: #8b5cf6;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
+/* Empty states */
+.empty-feed, .empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
 }
 
-.ai-assistant-btn:hover {
-  background-color: #7c3aed;
+.empty-feed h3, .empty-state h3 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
 }
 
-.ai-assistant-modal {
+/* Modals */
+.modal-overlay {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 90%;
-  max-width: 500px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 1000;
-  overflow: hidden;
+  padding: 1rem;
 }
 
-.ai-modal-header {
+.modal-content {
+  background-color: white;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 10;
 }
 
-.ai-modal-header h3 {
+.modal-header h2 {
   margin: 0;
-  color: #1f2937;
+  color: #333;
 }
 
 .close-btn {
@@ -577,17 +380,134 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #6b7280;
+  color: #666;
 }
 
-.close-btn:hover {
-  color: #374151;
+/* Profile modal */
+.profile-modal .profile-content {
+  padding: 1.5rem;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: #3f51b5;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.profile-info h2 {
+  margin: 0 0 0.25rem 0;
+  color: #333;
+}
+
+.profile-stats {
+  margin: 0;
+  color: #666;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.profile-tabs {
+  display: flex;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+}
+
+.tab.active {
+  color: #3f51b5;
+  font-weight: bold;
+  border-bottom: 2px solid #3f51b5;
+}
+
+.clubs-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.club-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}
+
+.club-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.club-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.club-initials {
+  font-weight: bold;
+  color: #3f51b5;
+}
+
+.club-details h3 {
+  margin: 0 0 0.25rem 0;
+  color: #333;
+}
+
+.club-description {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+/* AI modal */
+.ai-modal {
+  max-width: 500px;
 }
 
 .ai-modal-content {
   padding: 1.5rem;
-  max-height: 60vh;
-  overflow-y: auto;
 }
 
 .ai-message {
@@ -595,26 +515,16 @@
 }
 
 .message-content {
-  background-color: #f3f4f6;
   padding: 1rem;
+  background-color: #f0f0f0;
   border-radius: 8px;
-}
-
-.message-content p {
-  margin: 0;
-  color: #4b5563;
 }
 
 .ai-response {
-  background-color: #e0e7ff;
-  padding: 1rem;
-  border-radius: 8px;
   margin-bottom: 1.5rem;
-}
-
-.ai-response p {
-  margin: 0;
-  color: #3730a3;
+  padding: 1rem;
+  background-color: #e3f2fd;
+  border-radius: 8px;
 }
 
 .ai-input-area {
@@ -625,129 +535,79 @@
 .ai-input {
   flex: 1;
   padding: 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
 }
 
 .ai-send-btn {
   padding: 0.75rem 1rem;
-  background-color: #3b82f6;
+  background-color: #3f51b5;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-}
-
-.ai-send-btn:hover:not(:disabled) {
-  background-color: #2563eb;
 }
 
 .ai-send-btn:disabled {
-  opacity: 0.7;
+  background-color: #ccc;
   cursor: not-allowed;
 }
 
-/* User Avatar */
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #680bab;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-/* Modal Overlay */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  width: 90%;
-  max-width: 400px;
-  overflow: hidden;
-}
-
+/* Confirm modal */
 .confirm-modal {
-  padding: 1.5rem;
+  max-width: 400px;
+  text-align: center;
 }
 
 .confirm-modal h3 {
-  margin-top: 0;
-  color: #1f2937;
+  margin: 0 0 1rem 0;
+  color: #333;
 }
 
 .confirm-modal p {
-  margin-bottom: 1.5rem;
-  color: #6b7280;
+  margin: 0 0 1.5rem 0;
+  color: #666;
 }
 
 .modal-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
+  gap: 1rem;
+  justify-content: center;
 }
 
 .modal-btn {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.5rem;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
+  font-size: 1rem;
 }
 
 .modal-btn.cancel {
-  background-color: #f3f4f6;
-  color: #374151;
-}
-
-.modal-btn.cancel:hover {
-  background-color: #e5e7eb;
+  background-color: #f0f0f0;
+  color: #333;
 }
 
 .modal-btn.confirm {
-  background-color: #ef4444;
+  background-color: #f44336;
   color: white;
 }
 
-.modal-btn.confirm:hover {
-  background-color: #dc2626;
-}
-
-/* Loading State */
+/* Loading state */
 .user-dashboard.loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 50vh;
+  min-height: 100vh;
 }
 
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #e5e7eb;
-  border-top: 4px solid #3b82f6;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3f51b5;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
@@ -758,96 +618,86 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .user-dashboard {
-    grid-template-columns: 1fr;
-    grid-template-areas: 
-      "header"
-      "main";
-  }
-  
-  .dashboard-sidebar {
-    display: none;
+/* Responsive styles */
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.5rem;
   }
   
   .header-left {
-    gap: 1rem;
+    width: 100%;
+    justify-content: space-between;
   }
-}
-
-@media (max-width: 768px) {
-  .dashboard-header {
-    padding: 1rem;
-    flex-direction: column;
-    gap: 1rem;
+  
+  .header-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .dashboard-main {
+    padding: 0.5rem;
   }
   
   .dashboard-nav {
-    padding: 0 1rem;
     overflow-x: auto;
     white-space: nowrap;
   }
   
-  .dashboard-main {
-    padding: 1rem;
-  }
-  
-  .feed {
-    padding: 1rem;
+  .nav-tab {
+    padding: 0.5rem 1rem;
   }
   
   .feed-item-header {
+    padding: 0.75rem;
+  }
+  
+  .feed-content {
+    padding: 0.75rem;
+  }
+  
+  .event-details {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.5rem;
+    gap: 0.25rem;
   }
   
   .explore-clubs-grid {
     grid-template-columns: 1fr;
   }
   
-  .event-details {
+  .modal-content {
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+  }
+  
+  .profile-header {
     flex-direction: column;
-    gap: 0.5rem;
+    text-align: center;
+  }
+  
+  .profile-stats {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .club-card {
+    flex-direction: column;
+    text-align: center;
   }
   
   .ai-input-area {
     flex-direction: column;
   }
-}
-
-/* Animation for modal appearance */
-@keyframes modalAppear {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -48%) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+  
+  .modal-actions {
+    flex-direction: column;
   }
 }
 
-.ai-assistant-modal {
-  animation: modalAppear 0.2s ease-out;
-}
-
-/* Scrollbar styling for webkit browsers */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
+@media (min-width: 769px) and (max-width: 1024px) {
+  .explore-clubs-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
