@@ -235,7 +235,7 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteEvent = async (id) => {
-    if (!confirm("Are you sure you want to delete this event?")) return;
+    if (!window.confirm("Are you sure you want to delete this event?")) return;
 
     setLoading(true);
     const { error } = await supabase
@@ -324,7 +324,7 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteAnnouncement = async (id) => {
-    if (!confirm("Are you sure you want to delete this announcement?")) return;
+    if (!window.confirm("Are you sure you want to delete this announcement?")) return;
 
     setLoading(true);
     const { error } = await supabase
@@ -386,7 +386,7 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteClub = async () => {
-    if (!confirm("Are you sure you want to delete this club? This action cannot be undone.")) return;
+    if (!window.confirm("Are you sure you want to delete this club? This action cannot be undone.")) return;
 
     setLoading(true);
     const { error } = await supabase
@@ -463,7 +463,7 @@ export default function AdminDashboard() {
   };
 
   const handleRemoveMember = async (userId) => {
-    if (!confirm("Are you sure you want to remove this member?")) return;
+    if (!window.confirm("Are you sure you want to remove this member?")) return;
 
     setLoading(true);
     const { error } = await supabase
@@ -539,7 +539,7 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteProfile = async (profileId) => {
-    if (!confirm("Are you sure you want to delete this profile? This action cannot be undone.")) return;
+    if (!window.confirm("Are you sure you want to delete this profile? This action cannot be undone.")) return;
 
     setLoading(true);
     const { error } = await supabase
