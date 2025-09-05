@@ -539,7 +539,7 @@ body {
   transform: rotate(90deg);
 }
 
-/* Profile Modal */
+/* Profile Modal - UPDATED TO MATCH FEED CARD STYLE */
 .profile-content {
   padding: 1.5rem;
 }
@@ -608,35 +608,37 @@ body {
   border-radius: 3px 3px 0 0;
 }
 
+/* Updated Club Cards in Profile to Match Feed Style */
 .clubs-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
 }
 
 .club-card-new {
   background: var(--card-bg);
   border-radius: var(--border-radius);
-  padding: 1rem;
+  overflow: hidden;
   box-shadow: var(--shadow-sm);
   transition: var(--transition);
+  animation: fadeIn 0.5s ease-out;
 }
 
 .club-card-new:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
 }
 
 .club-card-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .club-logo {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   display: flex;
@@ -644,6 +646,7 @@ body {
   justify-content: center;
   color: white;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 .club-logo img {
@@ -653,15 +656,36 @@ body {
   object-fit: cover;
 }
 
-.club-name {
-  font-size: 1.1rem;
+.club-info-profile {
+  margin-left: 0.75rem;
+  overflow: hidden;
+}
+
+.club-name-profile {
   font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.club-category {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.club-card-body {
+  padding: 1rem;
 }
 
 .club-description {
   color: var(--text-secondary);
-  font-size: 0.9rem;
   margin-bottom: 1rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .club-meta {
@@ -669,6 +693,31 @@ body {
   justify-content: space-between;
   font-size: 0.8rem;
   color: var(--text-secondary);
+}
+
+.member-count, .event-count {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.leave-club-btn {
+  width: 100%;
+  background: rgba(225, 112, 85, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(225, 112, 85, 0.2);
+  padding: 0.5rem;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.leave-club-btn:hover {
+  background: var(--danger);
+  color: white;
 }
 
 .logout-btn {
@@ -880,5 +929,13 @@ body {
   
   .clubs-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .club-card-header {
+    padding: 0.75rem;
+  }
+  
+  .club-card-body {
+    padding: 0.75rem;
   }
 }
