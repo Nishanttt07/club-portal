@@ -44,11 +44,17 @@ function useClubData(user) {
     const fetchClubData = async () => {
       try {
         // Fetch club
-        let { data: clubData } = await supabase
+        let { data: clubData, error: clubError } = await supabase
           .from("clubs")
           .select("*")
           .eq("admin_user_id", user.id)
           .single();
+
+        if (clubError) {
+          console.error("Error fetching club:", clubError);
+          setLoading(false);
+          return;
+        }
 
         setClub(clubData);
 
@@ -72,44 +78,78 @@ function useClubData(user) {
   }, [user]);
 
   const fetchEvents = async (clubId) => {
-    let { data } = await supabase
+    let { data, error } = await supabase
       .from("events")
       .select("*")
       .eq("club_id", clubId)
       .order("created_at", { ascending: false });
+    
+    if (error) {
+      console.error("Error fetching events:", error);
+      return;
+    }
+    
     setEvents(data || []);
   };
 
   const fetchAnnouncements = async (clubId) => {
-    let { data } = await supabase
+    let { data, error } = await supabase
       .from("announcements")
       .select("*")
       .eq("club_id", clubId)
       .order("created_at", { ascending: false });
+    
+    if (error) {
+      console.error("Error fetching announcements:", error);
+      return;
+    }
+    
     setAnnouncements(data || []);
   };
 
   const fetchMembers = async (clubId) => {
-    let { data: memberships } = await supabase
+    let { data: memberships, error: membershipError } = await supabase
       .from("memberships")
       .select("id, joined_at, user_id")
       .eq("club_id", clubId);
 
+    if (membershipError) {
+      console.error("Error fetching memberships:", membershipError);
+      return;
+    }
+
     if (!memberships) return;
 
-    // Fetch user emails from profiles table instead of auth
+    // Fetch user emails directly from auth.users using RPC
     const memberList = await Promise.all(
       memberships.map(async (m) => {
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("email")
-          .eq("id", m.user_id)
-          .single();
-        
-        return {
-          ...m,
-          email: profileData?.email || "Unknown",
-        };
+        try {
+          // Try to get user email from auth
+          const { data: userData, error: userError } = await supabase
+            .from("users")
+            .select("email")
+            .eq("id", m.user_id)
+            .single();
+          
+          if (userError) {
+            console.error("Error fetching user:", userError);
+            return {
+              ...m,
+              email: "Unknown",
+            };
+          }
+          
+          return {
+            ...m,
+            email: userData?.email || "Unknown",
+          };
+        } catch (error) {
+          console.error("Error processing member:", error);
+          return {
+            ...m,
+            email: "Unknown",
+          };
+        }
       })
     );
 
@@ -574,7 +614,7 @@ export default function AdminDashboard() {
     
     try {
       if (club) {
-        await supabase
+        const { error } = await supabase
           .from("clubs")
           .update({
             name: clubForm.name,
@@ -582,9 +622,11 @@ export default function AdminDashboard() {
             logo_url: clubForm.logo_url,
           })
           .eq("id", club.id);
+        
+        if (error) throw error;
         alert("Club updated successfully!");
       } else {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("clubs")
           .insert([
             {
@@ -596,6 +638,8 @@ export default function AdminDashboard() {
           ])
           .select()
           .single();
+        
+        if (error) throw error;
         alert("Club created successfully!");
         window.location.reload(); // Reload to fetch new club data
       }
@@ -614,9 +658,14 @@ export default function AdminDashboard() {
     setIsSubmitting(true);
     
     try {
+      if (!club) {
+        alert("No club found. Please create a club first.");
+        return;
+      }
+      
       if (editingEvent) {
         // Update existing event
-        await supabase
+        const { error } = await supabase
           .from("events")
           .update({
             title: eventForm.title,
@@ -630,10 +679,12 @@ export default function AdminDashboard() {
             registration_link: eventForm.registration_link,
           })
           .eq("id", editingEvent.id);
+        
+        if (error) throw error;
         alert("Event updated successfully!");
       } else {
         // Add new event
-        await supabase.from("events").insert([
+        const { error } = await supabase.from("events").insert([
           {
             title: eventForm.title,
             date: eventForm.date,
@@ -647,6 +698,8 @@ export default function AdminDashboard() {
             club_id: club.id,
           },
         ]);
+        
+        if (error) throw error;
         alert("Event added successfully!");
       }
       
@@ -677,7 +730,8 @@ export default function AdminDashboard() {
   const deleteEvent = async (id) => {
     if (window.confirm("Are you sure you want to delete this event?")) {
       try {
-        await supabase.from("events").delete().eq("id", id);
+        const { error } = await supabase.from("events").delete().eq("id", id);
+        if (error) throw error;
         fetchEvents(club.id);
         alert("Event deleted successfully!");
       } catch (error) {
@@ -693,9 +747,14 @@ export default function AdminDashboard() {
     setIsSubmitting(true);
     
     try {
+      if (!club) {
+        alert("No club found. Please create a club first.");
+        return;
+      }
+      
       if (editingAnnouncement) {
         // Update existing announcement
-        await supabase
+        const { error } = await supabase
           .from("announcements")
           .update({
             title: announcementForm.title,
@@ -704,10 +763,12 @@ export default function AdminDashboard() {
             link: announcementForm.link,
           })
           .eq("id", editingAnnouncement.id);
+        
+        if (error) throw error;
         alert("Announcement updated successfully!");
       } else {
         // Add new announcement
-        await supabase.from("announcements").insert([
+        const { error } = await supabase.from("announcements").insert([
           {
             title: announcementForm.title,
             message: announcementForm.message,
@@ -716,6 +777,8 @@ export default function AdminDashboard() {
             club_id: club.id,
           },
         ]);
+        
+        if (error) throw error;
         alert("Announcement added successfully!");
       }
       
@@ -741,7 +804,8 @@ export default function AdminDashboard() {
   const deleteAnnouncement = async (id) => {
     if (window.confirm("Are you sure you want to delete this announcement?")) {
       try {
-        await supabase.from("announcements").delete().eq("id", id);
+        const { error } = await supabase.from("announcements").delete().eq("id", id);
+        if (error) throw error;
         fetchAnnouncements(club.id);
         alert("Announcement deleted successfully!");
       } catch (error) {
@@ -755,7 +819,8 @@ export default function AdminDashboard() {
   const removeMember = async (membershipId, email) => {
     if (window.confirm(`Are you sure you want to remove ${email} from the club?`)) {
       try {
-        await supabase.from("memberships").delete().eq("id", membershipId);
+        const { error } = await supabase.from("memberships").delete().eq("id", membershipId);
+        if (error) throw error;
         fetchMembers(club.id);
         alert("Member removed successfully!");
       } catch (error) {
