@@ -453,7 +453,7 @@ textarea {
 .club-logo-large {
   width: 60px;
   height: 60px;
-  border-radius: 12px;
+  border-radius: 50%; /* Changed from 12px to 50% */
   object-fit: cover;
 }
 
