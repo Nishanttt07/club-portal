@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { format } from 'date-fns';
-import "/AdminDashboard.css";
+import "./AdminDashboard.css";
 
 
 export default function AdminDashboard() {
