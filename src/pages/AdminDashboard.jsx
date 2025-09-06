@@ -3,7 +3,6 @@ import { supabase } from "../supabaseClient";
 import { format } from 'date-fns';
 import "./AdminDashboard.css";
 
-
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("events");
   const [user, setUser] = useState(null);
@@ -12,7 +11,6 @@ export default function AdminDashboard() {
   const [events, setEvents] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
   const [members, setMembers] = useState([]);
-  const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
@@ -27,25 +25,14 @@ export default function AdminDashboard() {
     entry_fee: "",
     prize_pool: "",
     image_url: "",
-    link: "",
-    registration_link: "",
-    published: true
+    registration_link: ""
   });
 
   // Announcement state
   const [newAnnouncement, setNewAnnouncement] = useState({
-    title: "",
     message: "",
     image_url: "",
-    link: "",
-    pinned: false
-  });
-
-  // Club state
-  const [clubForm, setClubForm] = useState({
-    name: "",
-    description: "",
-    logo_url: ""
+    link: ""
   });
 
   // Member state
@@ -70,11 +57,6 @@ export default function AdminDashboard() {
         } else if (clubData) {
           setClubId(clubData.id);
           setClubInfo(clubData);
-          setClubForm({
-            name: clubData.name || "",
-            description: clubData.description || "",
-            logo_url: clubData.logo_url || ""
-          });
         }
       }
     };
@@ -90,10 +72,6 @@ export default function AdminDashboard() {
         fetchAnnouncements();
       } else if (activeTab === "members") {
         fetchMembers();
-      } else if (activeTab === "profiles") {
-        fetchProfiles();
-      } else if (activeTab === "club") {
-        fetchClubStats();
       }
     }
   }, [activeTab, clubId]);
@@ -114,7 +92,6 @@ export default function AdminDashboard() {
       .from("announcements")
       .select("*")
       .eq("club_id", clubId)
-      .order("pinned", { ascending: false })
       .order("created_at", { ascending: false });
 
     if (error) console.error("Error fetching announcements:", error.message);
@@ -132,47 +109,6 @@ export default function AdminDashboard() {
 
     if (error) console.error("Error fetching members:", error.message);
     else setMembers(data);
-  };
-
-  const fetchProfiles = async () => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) console.error("Error fetching profiles:", error.message);
-    else setProfiles(data);
-  };
-
-  const fetchClubStats = async () => {
-    // Get total members
-    const { count: memberCount, error: memberError } = await supabase
-      .from("memberships")
-      .select("*", { count: "exact" })
-      .eq("club_id", clubId);
-
-    // Get total events
-    const { count: eventCount, error: eventError } = await supabase
-      .from("events")
-      .select("*", { count: "exact" })
-      .eq("club_id", clubId);
-
-    // Get active announcements
-    const { count: announcementCount, error: announcementError } = await supabase
-      .from("announcements")
-      .select("*", { count: "exact" })
-      .eq("club_id", clubId);
-
-    if (memberError || eventError || announcementError) {
-      console.error("Error fetching club stats");
-    } else {
-      setClubInfo(prev => ({
-        ...prev,
-        memberCount,
-        eventCount,
-        announcementCount
-      }));
-    }
   };
 
   // Event CRUD operations
@@ -206,9 +142,7 @@ export default function AdminDashboard() {
         entry_fee: "",
         prize_pool: "",
         image_url: "",
-        link: "",
-        registration_link: "",
-        published: true
+        registration_link: ""
       });
     }
     setLoading(false);
@@ -253,23 +187,6 @@ export default function AdminDashboard() {
     setLoading(false);
   };
 
-  const toggleEventPublish = async (event) => {
-    setLoading(true);
-    const { error } = await supabase
-      .from("events")
-      .update({ published: !event.published })
-      .eq("id", event.id);
-
-    if (error) {
-      console.error("Error toggling event publish status:", error.message);
-      alert("Error updating event: " + error.message);
-    } else {
-      alert(`✅ Event ${!event.published ? 'published' : 'unpublished'} successfully!`);
-      fetchEvents();
-    }
-    setLoading(false);
-  };
-
   // Announcement CRUD operations
   const handleCreateAnnouncement = async () => {
     if (!user || !clubId) {
@@ -293,11 +210,9 @@ export default function AdminDashboard() {
       alert("✅ Announcement created successfully!");
       fetchAnnouncements();
       setNewAnnouncement({
-        title: "",
         message: "",
         image_url: "",
-        link: "",
-        pinned: false
+        link: ""
       });
     }
     setLoading(false);
@@ -338,69 +253,6 @@ export default function AdminDashboard() {
     } else {
       alert("✅ Announcement deleted successfully!");
       fetchAnnouncements();
-    }
-    setLoading(false);
-  };
-
-  const toggleAnnouncementPin = async (announcement) => {
-    setLoading(true);
-    const { error } = await supabase
-      .from("announcements")
-      .update({ pinned: !announcement.pinned })
-      .eq("id", announcement.id);
-
-    if (error) {
-      console.error("Error toggling announcement pin status:", error.message);
-      alert("Error updating announcement: " + error.message);
-    } else {
-      alert(`✅ Announcement ${!announcement.pinned ? 'pinned' : 'unpinned'} successfully!`);
-      fetchAnnouncements();
-    }
-    setLoading(false);
-  };
-
-  // Club operations
-  const handleUpdateClub = async () => {
-    if (!clubId) return;
-
-    setLoading(true);
-    const { error } = await supabase
-      .from("clubs")
-      .update(clubForm)
-      .eq("id", clubId);
-
-    if (error) {
-      console.error("Error updating club:", error.message);
-      alert("Error updating club: " + error.message);
-    } else {
-      alert("✅ Club updated successfully!");
-      // Refresh club info
-      const { data } = await supabase
-        .from("clubs")
-        .select("*")
-        .eq("id", clubId)
-        .single();
-      setClubInfo(data);
-    }
-    setLoading(false);
-  };
-
-  const handleDeleteClub = async () => {
-    if (!window.confirm("Are you sure you want to delete this club? This action cannot be undone.")) return;
-
-    setLoading(true);
-    const { error } = await supabase
-      .from("clubs")
-      .delete()
-      .eq("id", clubId);
-
-    if (error) {
-      console.error("Error deleting club:", error.message);
-      alert("Error deleting club: " + error.message);
-    } else {
-      alert("✅ Club deleted successfully!");
-      setClubId(null);
-      setClubInfo(null);
     }
     setLoading(false);
   };
@@ -503,58 +355,13 @@ export default function AdminDashboard() {
     document.body.removeChild(link);
   };
 
-  // Profile operations
-  const handleUpdateProfileRole = async (profileId, newRole) => {
-    setLoading(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({ role: newRole })
-      .eq("id", profileId);
-
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error("Error updating profile:", error.message);
-      alert("Error updating profile: " + error.message);
+      console.error('Error logging out:', error.message);
     } else {
-      alert("✅ Profile updated successfully!");
-      fetchProfiles();
+      window.location.href = '/';
     }
-    setLoading(false);
-  };
-
-  const handleSuspendProfile = async (profileId, suspend) => {
-    setLoading(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({ suspended: suspend })
-      .eq("id", profileId);
-
-    if (error) {
-      console.error("Error updating profile:", error.message);
-      alert("Error updating profile: " + error.message);
-    } else {
-      alert(`✅ Profile ${suspend ? 'suspended' : 'activated'} successfully!`);
-      fetchProfiles();
-    }
-    setLoading(false);
-  };
-
-  const handleDeleteProfile = async (profileId) => {
-    if (!window.confirm("Are you sure you want to delete this profile? This action cannot be undone.")) return;
-
-    setLoading(true);
-    const { error } = await supabase
-      .from("profiles")
-      .delete()
-      .eq("id", profileId);
-
-    if (error) {
-      console.error("Error deleting profile:", error.message);
-      alert("Error deleting profile: " + error.message);
-    } else {
-      alert("✅ Profile deleted successfully!");
-      fetchProfiles();
-    }
-    setLoading(false);
   };
 
   // Render loading state
@@ -568,7 +375,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Navigation Tabs */}
+      {/* Header with profile and logout */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
@@ -577,7 +384,7 @@ export default function AdminDashboard() {
                 <h1 className="text-xl font-bold">Admin Dashboard</h1>
               </div>
               <nav className="hidden sm:ml-6 sm:flex">
-                {["events", "announcements", "club", "members", "profiles"].map((tab) => (
+                {["events", "announcements", "members"].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
@@ -592,8 +399,14 @@ export default function AdminDashboard() {
                 ))}
               </nav>
             </div>
-            <div className="flex items-center">
-              <span className="text-sm text-gray-700">Club: {clubInfo?.name || "N/A"}</span>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-700">{clubInfo?.name || "N/A"}</span>
+              <button 
+                onClick={handleLogout}
+                className="bg-indigo-600 text-white px-3 py-1 rounded-md text-sm hover:bg-indigo-700"
+              >
+                Logout
+              </button>
             </div>
           </div>
         </div>
@@ -668,13 +481,6 @@ export default function AdminDashboard() {
                           />
                           <input
                             type="text"
-                            placeholder="Event Link"
-                            value={editingEvent.link}
-                            onChange={(e) => setEditingEvent({ ...editingEvent, link: e.target.value })}
-                            className="border border-gray-300 rounded-md px-3 py-2"
-                          />
-                          <input
-                            type="text"
                             placeholder="Registration Link"
                             value={editingEvent.registration_link}
                             onChange={(e) => setEditingEvent({ ...editingEvent, registration_link: e.target.value })}
@@ -688,16 +494,6 @@ export default function AdminDashboard() {
                           className="border border-gray-300 rounded-md px-3 py-2 w-full mb-4"
                           rows="3"
                         />
-                        <div className="flex items-center mb-4">
-                          <input
-                            type="checkbox"
-                            checked={editingEvent.published}
-                            onChange={(e) => setEditingEvent({ ...editingEvent, published: e.target.checked })}
-                            className="mr-2"
-                            id="edit-published"
-                          />
-                          <label htmlFor="edit-published">Published</label>
-                        </div>
                         <div className="flex space-x-2">
                           <button 
                             onClick={handleUpdateEvent}
@@ -766,13 +562,6 @@ export default function AdminDashboard() {
                           />
                           <input
                             type="text"
-                            placeholder="Event Link"
-                            value={newEvent.link}
-                            onChange={(e) => setNewEvent({ ...newEvent, link: e.target.value })}
-                            className="border border-gray-300 rounded-md px-3 py-2"
-                          />
-                          <input
-                            type="text"
                             placeholder="Registration Link"
                             value={newEvent.registration_link}
                             onChange={(e) => setNewEvent({ ...newEvent, registration_link: e.target.value })}
@@ -786,16 +575,6 @@ export default function AdminDashboard() {
                           className="border border-gray-300 rounded-md px-3 py-2 w-full mb-4"
                           rows="3"
                         />
-                        <div className="flex items-center mb-4">
-                          <input
-                            type="checkbox"
-                            checked={newEvent.published}
-                            onChange={(e) => setNewEvent({ ...newEvent, published: e.target.checked })}
-                            className="mr-2"
-                            id="create-published"
-                          />
-                          <label htmlFor="create-published">Published</label>
-                        </div>
                         <button 
                           onClick={handleCreateEvent}
                           className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
@@ -811,9 +590,8 @@ export default function AdminDashboard() {
                         <thead className="bg-gray-50">
                           <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date/Time</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Venue</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                           </tr>
                         </thead>
@@ -831,23 +609,12 @@ export default function AdminDashboard() {
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {event.venue}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${event.published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                  {event.published ? 'Published' : 'Draft'}
-                                </span>
-                              </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <button 
                                   onClick={() => setEditingEvent(event)}
                                   className="text-indigo-600 hover:text-indigo-900 mr-3"
                                 >
                                   Edit
-                                </button>
-                                <button 
-                                  onClick={() => toggleEventPublish(event)}
-                                  className="text-yellow-600 hover:text-yellow-900 mr-3"
-                                >
-                                  {event.published ? 'Unpublish' : 'Publish'}
                                 </button>
                                 <button 
                                   onClick={() => handleDeleteEvent(event.id)}
@@ -879,13 +646,6 @@ export default function AdminDashboard() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                           <input
                             type="text"
-                            placeholder="Title"
-                            value={editingAnnouncement.title}
-                            onChange={(e) => setEditingAnnouncement({ ...editingAnnouncement, title: e.target.value })}
-                            className="border border-gray-300 rounded-md px-3 py-2"
-                          />
-                          <input
-                            type="text"
                             placeholder="Image URL"
                             value={editingAnnouncement.image_url}
                             onChange={(e) => setEditingAnnouncement({ ...editingAnnouncement, image_url: e.target.value })}
@@ -906,16 +666,6 @@ export default function AdminDashboard() {
                           className="border border-gray-300 rounded-md px-3 py-2 w-full mb-4"
                           rows="3"
                         />
-                        <div className="flex items-center mb-4">
-                          <input
-                            type="checkbox"
-                            checked={editingAnnouncement.pinned}
-                            onChange={(e) => setEditingAnnouncement({ ...editingAnnouncement, pinned: e.target.checked })}
-                            className="mr-2"
-                            id="edit-pinned"
-                          />
-                          <label htmlFor="edit-pinned">Pinned</label>
-                        </div>
                         <div className="flex space-x-2">
                           <button 
                             onClick={handleUpdateAnnouncement}
@@ -935,13 +685,6 @@ export default function AdminDashboard() {
                       <div className="mb-8 bg-gray-50 p-4 rounded-lg">
                         <h3 className="text-lg font-medium mb-4">Create New Announcement</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                          <input
-                            type="text"
-                            placeholder="Title"
-                            value={newAnnouncement.title}
-                            onChange={(e) => setNewAnnouncement({ ...newAnnouncement, title: e.target.value })}
-                            className="border border-gray-300 rounded-md px-3 py-2"
-                          />
                           <input
                             type="text"
                             placeholder="Image URL"
@@ -964,16 +707,6 @@ export default function AdminDashboard() {
                           className="border border-gray-300 rounded-md px-3 py-2 w-full mb-4"
                           rows="3"
                         />
-                        <div className="flex items-center mb-4">
-                          <input
-                            type="checkbox"
-                            checked={newAnnouncement.pinned}
-                            onChange={(e) => setNewAnnouncement({ ...newAnnouncement, pinned: e.target.checked })}
-                            className="mr-2"
-                            id="create-pinned"
-                          />
-                          <label htmlFor="create-pinned">Pinned</label>
-                        </div>
                         <button 
                           onClick={handleCreateAnnouncement}
                           className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
@@ -988,25 +721,19 @@ export default function AdminDashboard() {
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                           {announcements.map((announcement) => (
                             <tr key={announcement.id}>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-medium text-gray-900">{announcement.title}</div>
-                              </td>
                               <td className="px-6 py-4">
-                                <div className="text-sm text-gray-900">{announcement.message.substring(0, 50)}...</div>
+                                <div className="text-sm text-gray-900">{announcement.message.substring(0, 100)}...</div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${announcement.pinned ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>
-                                  {announcement.pinned ? 'Pinned' : 'Normal'}
-                                </span>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {format(new Date(announcement.created_at), "PPpp")}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <button 
@@ -1014,12 +741,6 @@ export default function AdminDashboard() {
                                   className="text-indigo-600 hover:text-indigo-900 mr-3"
                                 >
                                   Edit
-                                </button>
-                                <button 
-                                  onClick={() => toggleAnnouncementPin(announcement)}
-                                  className="text-yellow-600 hover:text-yellow-900 mr-3"
-                                >
-                                  {announcement.pinned ? 'Unpin' : 'Pin'}
                                 </button>
                                 <button 
                                   onClick={() => handleDeleteAnnouncement(announcement.id)}
@@ -1032,112 +753,6 @@ export default function AdminDashboard() {
                           ))}
                         </tbody>
                       </table>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Club Management Tab */}
-              {activeTab === "club" && (
-                <div className="bg-white rounded-lg shadow overflow-hidden">
-                  <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                    <h2 className="text-lg font-medium text-gray-900">Club Management</h2>
-                  </div>
-                  
-                  <div className="px-4 py-5 sm:p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                      <div className="bg-indigo-100 p-4 rounded-lg">
-                        <h3 className="text-lg font-medium text-indigo-800">Total Members</h3>
-                        <p className="text-3xl font-bold text-indigo-900">{clubInfo?.memberCount || 0}</p>
-                      </div>
-                      <div className="bg-green-100 p-4 rounded-lg">
-                        <h3 className="text-lg font-medium text-green-800">Total Events</h3>
-                        <p className="text-3xl font-bold text-green-900">{clubInfo?.eventCount || 0}</p>
-                      </div>
-                      <div className="bg-purple-100 p-4 rounded-lg">
-                        <h3 className="text-lg font-medium text-purple-800">Active Announcements</h3>
-                        <p className="text-3xl font-bold text-purple-900">{clubInfo?.announcementCount || 0}</p>
-                      </div>
-                    </div>
-
-                    <div className="mb-8 bg-gray-50 p-4 rounded-lg">
-                      <h3 className="text-lg font-medium mb-4">Update Club Information</h3>
-                      <div className="grid grid-cols-1 gap-4 mb-4">
-                        <input
-                          type="text"
-                          placeholder="Club Name"
-                          value={clubForm.name}
-                          onChange={(e) => setClubForm({ ...clubForm, name: e.target.value })}
-                          className="border border-gray-300 rounded-md px-3 py-2"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Logo URL"
-                          value={clubForm.logo_url}
-                          onChange={(e) => setClubForm({ ...clubForm, logo_url: e.target.value })}
-                          className="border border-gray-300 rounded-md px-3 py-2"
-                        />
-                        <textarea
-                          placeholder="Description"
-                          value={clubForm.description}
-                          onChange={(e) => setClubForm({ ...clubForm, description: e.target.value })}
-                          className="border border-gray-300 rounded-md px-3 py-2 w-full"
-                          rows="3"
-                        />
-                      </div>
-                      <button 
-                        onClick={handleUpdateClub}
-                        className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 mr-3"
-                      >
-                        Update Club
-                      </button>
-                      <button 
-                        onClick={handleDeleteClub}
-                        className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-                      >
-                        Delete Club
-                      </button>
-                    </div>
-
-                    <div>
-                      <h3 className="text-lg font-medium mb-4">Club Information</h3>
-                      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                        <div className="px-4 py-5 sm:px-6">
-                          <h3 className="text-lg leading-6 font-medium text-gray-900">Club Profile</h3>
-                        </div>
-                        <div className="border-t border-gray-200">
-                          <dl>
-                            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                              <dt className="text-sm font-medium text-gray-500">Club name</dt>
-                              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{clubInfo?.name}</dd>
-                            </div>
-                            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                              <dt className="text-sm font-medium text-gray-500">Description</dt>
-                              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{clubInfo?.description}</dd>
-                            </div>
-                            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                              <dt className="text-sm font-medium text-gray-500">Logo</dt>
-                              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                {clubInfo?.logo_url ? (
-                                  <img src={clubInfo.logo_url} alt="Club Logo" className="h-16 w-16 object-contain" />
-                                ) : (
-                                  "No logo uploaded"
-                                )}
-                              </dd>
-                            </div>
-                            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                              <dt className="text-sm font-medium text-gray-500">Admin User ID</dt>
-                              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{clubInfo?.admin_user_id}</dd>
-                            </div>
-                            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                              <dt className="text-sm font-medium text-gray-500">Created At</dt>
-                              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                {clubInfo?.created_at ? format(new Date(clubInfo.created_at), "PPpp") : "N/A"}
-                              </dd>
-                            </div>
-                          </dl>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -1218,78 +833,6 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               )}
-
-              {/* Profiles Tab */}
-              {activeTab === "profiles" && (
-                <div className="bg-white rounded-lg shadow overflow-hidden">
-                  <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                    <h2 className="text-lg font-medium text-gray-900">User Profiles Management</h2>
-                  </div>
-                  
-                  <div className="px-4 py-5 sm:p-6">
-                    <h3 className="text-lg font-medium mb-4">All User Profiles</h3>
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {profiles.map((profile) => (
-                            <tr key={profile.id}>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-medium text-gray-900">{profile.full_name || "N/A"}</div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {profile.email}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <select 
-                                  value={profile.role || "user"} 
-                                  onChange={(e) => handleUpdateProfileRole(profile.id, e.target.value)}
-                                  className="border border-gray-300 rounded-md px-2 py-1"
-                                >
-                                  <option value="user">User</option>
-                                  <option value="admin">Admin</option>
-                                  <option value="moderator">Moderator</option>
-                                </select>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${profile.suspended ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                                  {profile.suspended ? 'Suspended' : 'Active'}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {format(new Date(profile.created_at), "PPpp")}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button 
-                                  onClick={() => handleSuspendProfile(profile.id, !profile.suspended)}
-                                  className={`mr-3 ${profile.suspended ? 'text-green-600 hover:text-green-900' : 'text-yellow-600 hover:text-yellow-900'}`}
-                                >
-                                  {profile.suspended ? 'Activate' : 'Suspend'}
-                                </button>
-                                <button 
-                                  onClick={() => handleDeleteProfile(profile.id)}
-                                  className="text-red-600 hover:text-red-900"
-                                >
-                                  Delete
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              )}
             </>
           )}
         </div>
@@ -1297,9 +840,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-
-
-
-
-
-
