@@ -1,463 +1,530 @@
-/* AdminDashboard.css - ClubHub Style Update */
+/* AdminDashboard.css - ClubHub Style */
 
 /* Base Styles */
 .admin-dashboard {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: #2d3748;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: #f8fafc;
   min-height: 100vh;
 }
 
 /* Header Styles */
-.admin-dashboard .bg-white {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%) !important;
-}
-
-.admin-dashboard .capitalize {
-  transition: all 0.3s ease;
-  position: relative;
-  color: white !important;
-  font-weight: 500;
-}
-
-.admin-dashboard .capitalize::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: white;
-  transition: width 0.3s ease;
-}
-
-.admin-dashboard .capitalize:hover::after {
-  width: 100%;
-}
-
-.admin-dashboard .capitalize.border-indigo-500::after {
-  width: 100%;
-}
-
-.admin-dashboard .text-sm.text-gray-700 {
-  color: white !important;
-  font-weight: 500;
-}
-
-/* Button Styles */
-.admin-dashboard button {
-  transition: all 0.3s ease;
-  transform: translateY(0);
-  border-radius: 12px;
-  font-weight: 600;
-}
-
-.admin-dashboard button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-}
-
-.admin-dashboard .bg-indigo-600 {
+.dashboard-header {
   background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-  box-shadow: 0 4px 10px rgba(106, 17, 203, 0.3);
+  color: white;
+  padding: 0.5rem 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.logo h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.logo span {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tab-btn {
+  background: transparent;
   border: none;
-}
-
-.admin-dashboard .bg-indigo-600:hover {
-  background: linear-gradient(135deg, #5c0fc7 0%, #1e6de8 100%);
-  box-shadow: 0 6px 15px rgba(106, 17, 203, 0.4);
-}
-
-.admin-dashboard .bg-green-600 {
-  background: linear-gradient(135deg, #10b981 0%, #0d9c6e 100%);
-  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
-  border: none;
-}
-
-.admin-dashboard .bg-green-600:hover {
-  background: linear-gradient(135deg, #0ea371 0%, #0b8c61 100%);
-  box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4);
-}
-
-/* Card Styles - ClubHub Inspired */
-.admin-dashboard .bg-white.rounded-lg.shadow {
-  border-radius: 16px;
-  overflow: hidden;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.tab-btn:hover, .tab-btn.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.club-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.club-name {
+  font-weight: 500;
+}
+
+.club-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.logout-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
   border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Content Area */
+.dashboard-content {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+.no-club-message {
   background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-.admin-dashboard .bg-white.rounded-lg.shadow:hover {
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-  transform: translateY(-5px);
+.no-club-message p {
+  color: #e53e3e;
+  font-weight: 500;
+  margin: 0;
 }
 
-.admin-dashboard .bg-gray-50 {
-  background: rgba(255, 255, 255, 0.9) !important;
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+/* Management Sections */
+.management-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
 }
 
-/* Event and Announcement Cards - ClubHub Style */
-.admin-dashboard .shadow-md {
-  transition: all 0.3s ease;
-  border-radius: 16px;
-  overflow: hidden;
-  height: 100%;
+.management-section h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* Forms */
+.create-form {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.create-form h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #2d3748;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-group {
   display: flex;
   flex-direction: column;
-  background: white;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: #4a5568;
+}
+
+input, textarea {
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: #6a11cb;
+  box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Buttons */
+.primary-btn {
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  color: white;
   border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(106, 17, 203, 0.2);
 }
 
-.admin-dashboard .shadow-md:hover {
+.primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(106, 17, 203, 0.25);
+}
+
+.secondary-btn {
+  background: #e2e8f0;
+  color: #4a5568;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.secondary-btn:hover {
+  background: #cbd5e0;
+}
+
+.edit-btn {
+  background: #4299e1;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-btn:hover {
+  background: #3182ce;
+}
+
+.delete-btn {
+  background: #e53e3e;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
+  background: #c53030;
+}
+
+/* Cards */
+.items-grid h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #2d3748;
+}
+
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
 }
 
-.admin-dashboard .shadow-md img {
+.card-image {
   width: 100%;
   height: 200px;
+  overflow: hidden;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   transition: transform 0.5s ease;
 }
 
-.admin-dashboard .shadow-md:hover img {
+.card:hover .card-image img {
   transform: scale(1.05);
 }
 
-.admin-dashboard .shadow-md .p-4 {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
+.card-content {
   padding: 1.5rem;
 }
 
-.admin-dashboard .font-semibold.text-lg {
+.card-header {
+  margin-bottom: 1rem;
+}
+
+.card-header h4 {
   font-size: 1.25rem;
   font-weight: 700;
+  margin: 0 0 0.5rem 0;
   color: #2d3748;
-  margin-bottom: 0.75rem;
 }
 
-.admin-dashboard .text-gray-600 {
-  color: #718096 !important;
-  line-height: 1.5;
-}
-
-.admin-dashboard .text-sm.text-gray-500 {
-  color: #8592a6 !important;
+.date {
+  color: #718096;
   font-size: 0.9rem;
 }
 
-/* Form Elements */
-.admin-dashboard input,
-.admin-dashboard textarea {
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 12px 16px;
-  transition: all 0.3s ease;
-  font-size: 1rem;
+.description {
+  color: #4a5568;
+  line-height: 1.5;
+  margin-bottom: 1rem;
 }
 
-.admin-dashboard input:focus,
-.admin-dashboard textarea:focus {
-  outline: none;
-  border-color: #6a11cb;
-  box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.2);
-}
-
-/* Table Styles */
-.admin-dashboard table {
-  border-collapse: separate;
-  border-spacing: 0;
-  width: 100%;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-}
-
-.admin-dashboard th {
-  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-  padding: 16px;
-  text-align: left;
-  font-weight: 600;
-  color: white;
-}
-
-.admin-dashboard td {
-  padding: 16px;
-  border-bottom: 1px solid #e2e8f0;
-  background: white;
-}
-
-.admin-dashboard tr:last-child td {
-  border-bottom: none;
-}
-
-.admin-dashboard tr {
-  transition: background-color 0.2s ease;
-}
-
-.admin-dashboard tr:hover {
-  background-color: #f8fafc;
-}
-
-/* Loading Animation */
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
-}
-
-.admin-dashboard .min-h-screen.flex.items-center.justify-center {
-  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Tab Content Animation */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.admin-dashboard .bg-white.rounded-lg.shadow.overflow-hidden {
-  animation: fadeIn 0.5s ease-out;
-}
-
-/* Text and Label Styling */
-.admin-dashboard .text-lg.font-medium {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #2d3748;
+.card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   margin-bottom: 1.5rem;
 }
 
-.admin-dashboard .text-red-500 {
-  color: #e53e3e;
+.detail {
+  display: flex;
+  justify-content: space-between;
+}
+
+.label {
   font-weight: 500;
+  color: #4a5568;
+}
+
+.value {
+  color: #2d3748;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.announcement-link {
+  color: #6a11cb;
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  transition: color 0.3s ease;
+}
+
+.announcement-link:hover {
+  color: #2575fc;
+}
+
+/* Members Table */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.section-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: #2d3748;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.members-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.members-table th {
+  background: #f7fafc;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #4a5568;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.members-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.members-table tr:last-child td {
+  border-bottom: none;
+}
+
+.member-name {
+  font-weight: 500;
+  color: #2d3748;
+}
+
+/* Club Profile */
+.current-club-info {
+  margin-top: 2rem;
+}
+
+.current-club-info h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #2d3748;
+}
+
+.club-info-card {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 12px;
+}
+
+.club-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.club-logo-large {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.club-header h4 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+  color: #2d3748;
+}
+
+.club-header p {
+  color: #718096;
+  margin: 0;
+}
+
+.club-description {
+  color: #4a5568;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.created-date {
+  color: #718096;
+  font-size: 0.9rem;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .admin-dashboard .grid.grid-cols-1.md\:grid-cols-2.lg\:grid-cols-3 {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  
-  .admin-dashboard .grid.grid-cols-1.md\:grid-cols-2 {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  
-  .admin-dashboard .hidden.sm\:ml-6.sm\:flex {
-    display: none;
-  }
-  
-  .admin-dashboard .px-4.py-5.sm\:p-6 {
-    padding: 1.5rem 1rem;
-  }
-  
-  .admin-dashboard .flex.justify-between.h-16 {
+  .header-content {
     flex-direction: column;
-    height: auto;
-    padding: 1rem 0;
+    gap: 1rem;
+    padding: 0 1rem;
   }
   
-  .admin-dashboard .flex.items-center.space-x-4 {
-    margin-top: 1rem;
-    flex-wrap: wrap;
+  .header-left {
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
   }
   
-  .admin-dashboard .shadow-md {
-    margin-bottom: 1rem;
-  }
-}
-
-/* Mobile Navigation */
-.mobile-nav {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .mobile-nav {
-    display: flex;
+  .tabs {
+    width: 100%;
     overflow-x: auto;
-    padding: 0.75rem;
-    background: white;
-    border-top: 1px solid #e2e8f0;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 10;
-    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+    padding-bottom: 0.5rem;
   }
   
-  .mobile-nav button {
-    flex: 1;
-    padding: 0.75rem;
-    margin: 0 0.25rem;
-    border-radius: 12px;
-    text-align: center;
-    font-size: 0.8rem;
+  .tab-btn {
     white-space: nowrap;
-    background: #f7fafc;
-    color: #4a5568;
-    font-weight: 500;
   }
   
-  .mobile-nav button:hover {
-    background: #edf2f7;
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
   }
   
-  .admin-dashboard .py-6 {
-    padding-bottom: 5rem;
+  .form-grid {
+    grid-template-columns: 1fr;
   }
-}
-
-/* Custom Scrollbar */
-.admin-dashboard ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.admin-dashboard ::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.admin-dashboard ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-  border-radius: 10px;
-}
-
-.admin-dashboard ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #5c0fc7 0%, #1e6de8 100%);
-}
-
-/* Badge for Member Count */
-.member-badge {
-  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-  color: white;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  box-shadow: 0 4px 10px rgba(106, 17, 203, 0.3);
-}
-
-/* Animation for Alerts */
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
+  
+  .cards-container {
+    grid-template-columns: 1fr;
   }
-  to {
-    transform: translateX(0);
-    opacity: 1;
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
   }
-}
-
-.alert-message {
-  animation: slideIn 0.3s ease-out;
-}
-
-/* Status Indicators */
-.status-indicator {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-right: 8px;
-}
-
-.status-online {
-  background-color: #10B981;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
-}
-
-.status-offline {
-  background-color: #EF4444;
-  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
-}
-
-/* Focus States for Accessibility */
-.admin-dashboard button:focus,
-.admin-dashboard input:focus,
-.admin-dashboard textarea:focus {
-  outline: 2px solid #6a11cb;
-  outline-offset: 2px;
-}
-
-/* ClubHub Specific Styles */
-.clubhub-card {
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  background: white;
-}
-
-.clubhub-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-}
-
-.clubhub-card-header {
-  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-  color: white;
-  padding: 1.5rem;
-}
-
-.clubhub-card-body {
-  padding: 1.5rem;
-}
-
-.clubhub-btn {
-  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 12px 24px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(106, 17, 203, 0.3);
-}
-
-.clubhub-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(106, 17, 203, 0.4);
-  background: linear-gradient(135deg, #5c0fc7 0%, #1e6de8 100%);
-}
-
-/* Image Container to prevent cropping */
-.image-container {
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.image-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
-}
-
-.image-container:hover img {
-  transform: scale(1.05);
+  
+  .club-header {
+    flex-direction: column;
+    text-align: center;
+  }
 }
