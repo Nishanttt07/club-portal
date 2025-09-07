@@ -1,51 +1,74 @@
 import React, { useState, useEffect } from "react";
-import { supabase } from "../supabaseClient";
+import {
+  useSupabaseClient,
+  useUser,
+} from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
-import "./Login.css";
+import "./Login.css"; // your custom styles
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(true);
+  const supabase = useSupabaseClient();
+  const user = useUser();
   const navigate = useNavigate();
 
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+
+  // Redirect URL for magic link
   const redirectUrl =
     process.env.NODE_ENV === "development"
       ? "http://localhost:3000/login"
       : "https://club-portal-blush.vercel.app/login";
 
+  // ✅ Ensure profile exists in DB
   const ensureProfile = async (user) => {
     try {
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from("profiles")
         .select("role")
         .eq("id", user.id)
-        .maybeSingle();
+        .single();
+
+      if (error) {
+        if (error.code === "PGRST116") {
+          console.log("No profile found → creating one...");
+        } else {
+          console.error("Error fetching profile:", error.message);
+          return null;
+        }
+      }
 
       if (!profile) {
-        const { data: newProfile } = await supabase
+        const { data: newProfile, error: insertError } = await supabase
           .from("profiles")
           .insert([
             {
               id: user.id,
               email: user.email,
-              role: "user",
+              role: "user", // default role
             },
           ])
           .select("role")
           .single();
+
+        if (insertError) {
+          console.error("Error creating profile:", insertError.message);
+          return null;
+        }
         return newProfile;
       }
+
       return profile;
     } catch (err) {
-      console.error("ensureProfile error:", err);
+      console.error("Unexpected error in ensureProfile:", err);
       return null;
     }
   };
 
+  // ✅ Redirect user based on role
   const redirectUser = (profile) => {
     if (!profile) {
-      setLoading(false);
+      console.warn("No profile found, staying on login page");
       return;
     }
     if (profile.role === "admin") {
@@ -55,48 +78,25 @@ export default function Login() {
     }
   };
 
+  // ✅ When user logs in, check profile + redirect
   useEffect(() => {
-    const checkUser = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error("Session error:", error.message);
-        setLoading(false);
-        return;
-      }
-
-      if (data.session?.user) {
-        const profile = await ensureProfile(data.session.user);
+    const checkProfile = async () => {
+      if (user) {
+        const profile = await ensureProfile(user);
         redirectUser(profile);
-      } else {
-        setLoading(false); // <== stop spinner if not logged in
       }
     };
+    checkProfile();
+  }, [user]);
 
-    checkUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (session?.user) {
-          const profile = await ensureProfile(session.user);
-          redirectUser(profile);
-        } else {
-          setLoading(false);
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
+  // ✅ Handle magic link login
   const handleLogin = async (e) => {
     e.preventDefault();
     setMessage("Sending magic link...");
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: {
-        emailRedirectTo: redirectUrl,
-      },
+      options: { emailRedirectTo: redirectUrl },
     });
 
     if (error) {
@@ -106,32 +106,37 @@ export default function Login() {
     }
   };
 
-  if (loading) return <p className="loading-text">Checking login status...</p>;
-
   return (
     <div className="login-page">
       <div className="login-overlay"></div>
+
       <header className="login-header">
         <h1 className="app-title">🎓 ClubHub</h1>
         <p className="app-tagline">Connecting Students. Empowering Clubs.</p>
       </header>
 
       <main className="login-container">
-        <h2 className="login-title">Login with Magic Link</h2>
-        <form className="login-form" onSubmit={handleLogin}>
-          <input
-            type="email"
-            className="login-input"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <button type="submit" className="login-btn">
-            Send Magic Link
-          </button>
-        </form>
-        <p className="login-message">{message}</p>
+        {!user ? (
+          <>
+            <h2 className="login-title">Login with Magic Link</h2>
+            <form className="login-form" onSubmit={handleLogin}>
+              <input
+                type="email"
+                className="login-input"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <button type="submit" className="login-btn">
+                Send Magic Link
+              </button>
+            </form>
+            <p className="login-message">{message}</p>
+          </>
+        ) : (
+          <p className="loading-text">Redirecting...</p>
+        )}
       </main>
 
       <footer className="login-footer">
