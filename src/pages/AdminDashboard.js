@@ -1623,6 +1623,8 @@
 //   );
 // }
 
+
+
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { format } from 'date-fns';
@@ -1726,113 +1728,229 @@ const ClubModal = ({ clubInfo, editingClub, setEditingClub, handleCreateClub, ha
   );
 };
 
+// Event Form Component
+const EventForm = ({ event, onSubmit, onCancel, isEditing }) => {
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    date: "",
+    time: "",
+    venue: "",
+    entry_fee: "",
+    prize_pool: "",
+    image_url: "",
+    registration_link: ""
+  });
+
+  // Initialize form with event data when editing
+  useEffect(() => {
+    if (isEditing && event) {
+      setFormData(event);
+    }
+  }, [isEditing, event]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  return (
+    <div className="create-form">
+      <h3>{isEditing ? "Edit Event" : "Create New Event"}</h3>
+      <form onSubmit={handleSubmit}>
+        <div className="form-grid">
+          <input
+            type="text"
+            name="title"
+            placeholder="Title"
+            value={formData.title}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="date"
+            name="date"
+            value={formData.date}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="time"
+            name="time"
+            value={formData.time}
+            onChange={handleChange}
+          />
+          <input
+            type="text"
+            name="venue"
+            placeholder="Venue"
+            value={formData.venue}
+            onChange={handleChange}
+          />
+          <input
+            type="number"
+            name="entry_fee"
+            placeholder="Entry Fee"
+            value={formData.entry_fee}
+            onChange={handleChange}
+          />
+          <input
+            type="text"
+            name="prize_pool"
+            placeholder="Prize Pool"
+            value={formData.prize_pool}
+            onChange={handleChange}
+          />
+          <input
+            type="text"
+            name="image_url"
+            placeholder="Image URL"
+            value={formData.image_url}
+            onChange={handleChange}
+          />
+          <input
+            type="text"
+            name="registration_link"
+            placeholder="Registration Link"
+            value={formData.registration_link}
+            onChange={handleChange}
+          />
+        </div>
+        <textarea
+          name="description"
+          placeholder="Description"
+          value={formData.description}
+          onChange={handleChange}
+          rows="3"
+          required
+        />
+        <div className="form-actions">
+          <button type="submit" className="primary-btn">
+            {isEditing ? "Update Event" : "Create Event"}
+          </button>
+          {isEditing && (
+            <button type="button" onClick={onCancel} className="secondary-btn">
+              Cancel
+            </button>
+          )}
+        </div>
+      </form>
+    </div>
+  );
+};
+
+// Announcement Form Component
+const AnnouncementForm = ({ announcement, onSubmit, onCancel, isEditing }) => {
+  const [formData, setFormData] = useState({
+    title: "",
+    message: "",
+    image_url: "",
+    link: ""
+  });
+
+  // Initialize form with announcement data when editing
+  useEffect(() => {
+    if (isEditing && announcement) {
+      setFormData(announcement);
+    }
+  }, [isEditing, announcement]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  return (
+    <div className="create-form">
+      <h3>{isEditing ? "Edit Announcement" : "Create New Announcement"}</h3>
+      <form onSubmit={handleSubmit}>
+        <div className="form-grid">
+          <input
+            type="text"
+            name="title"
+            placeholder="Title"
+            value={formData.title}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="text"
+            name="image_url"
+            placeholder="Image URL"
+            value={formData.image_url}
+            onChange={handleChange}
+          />
+          <input
+            type="text"
+            name="link"
+            placeholder="Link"
+            value={formData.link}
+            onChange={handleChange}
+          />
+        </div>
+        <textarea
+          name="message"
+          placeholder="Message"
+          value={formData.message}
+          onChange={handleChange}
+          rows="3"
+          required
+        />
+        <div className="form-actions">
+          <button type="submit" className="primary-btn">
+            {isEditing ? "Update Announcement" : "Create Announcement"}
+          </button>
+          {isEditing && (
+            <button type="button" onClick={onCancel} className="secondary-btn">
+              Cancel
+            </button>
+          )}
+        </div>
+      </form>
+    </div>
+  );
+};
+
 // Events Management Component
-const EventsManagement = ({ events, newEvent, setNewEvent, handleCreateEvent, 
-  editingEvent, setEditingEvent, handleUpdateEvent, handleDeleteEvent }) => {
+const EventsManagement = ({ events, handleCreateEvent, handleUpdateEvent, handleDeleteEvent }) => {
+  const [editingEvent, setEditingEvent] = useState(null);
+
+  const handleEditSubmit = (formData) => {
+    handleUpdateEvent({ ...editingEvent, ...formData });
+    setEditingEvent(null);
+  };
+
+  const handleCreateSubmit = (formData) => {
+    handleCreateEvent(formData);
+  };
+
   return (
     <div className="management-section">
       <h2>Events Management</h2>
       
-      <div className="create-form">
-        <h3>{editingEvent ? "Edit Event" : "Create New Event"}</h3>
-        <div className="form-grid">
-          <input
-            type="text"
-            placeholder="Title"
-            value={editingEvent ? editingEvent.title : newEvent.title}
-            onChange={(e) => editingEvent 
-              ? setEditingEvent({ ...editingEvent, title: e.target.value })
-              : setNewEvent({ ...newEvent, title: e.target.value })
-            }
-          />
-          <input
-            type="date"
-            value={editingEvent ? editingEvent.date : newEvent.date}
-            onChange={(e) => editingEvent 
-              ? setEditingEvent({ ...editingEvent, date: e.target.value })
-              : setNewEvent({ ...newEvent, date: e.target.value })
-            }
-          />
-          <input
-            type="time"
-            value={editingEvent ? editingEvent.time : newEvent.time}
-            onChange={(e) => editingEvent 
-              ? setEditingEvent({ ...editingEvent, time: e.target.value })
-              : setNewEvent({ ...newEvent, time: e.target.value })
-            }
-          />
-          <input
-            type="text"
-            placeholder="Venue"
-            value={editingEvent ? editingEvent.venue : newEvent.venue}
-            onChange={(e) => editingEvent 
-              ? setEditingEvent({ ...editingEvent, venue: e.target.value })
-              : setNewEvent({ ...newEvent, venue: e.target.value })
-            }
-          />
-          <input
-            type="number"
-            placeholder="Entry Fee"
-            value={editingEvent ? editingEvent.entry_fee : newEvent.entry_fee}
-            onChange={(e) => editingEvent 
-              ? setEditingEvent({ ...editingEvent, entry_fee: e.target.value })
-              : setNewEvent({ ...newEvent, entry_fee: e.target.value })
-            }
-          />
-          <input
-            type="text"
-            placeholder="Prize Pool"
-            value={editingEvent ? editingEvent.prize_pool : newEvent.prize_pool}
-            onChange={(e) => editingEvent 
-              ? setEditingEvent({ ...editingEvent, prize_pool: e.target.value })
-              : setNewEvent({ ...newEvent, prize_pool: e.target.value })
-            }
-          />
-          <input
-            type="text"
-            placeholder="Image URL"
-            value={editingEvent ? editingEvent.image_url : newEvent.image_url}
-            onChange={(e) => editingEvent 
-              ? setEditingEvent({ ...editingEvent, image_url: e.target.value })
-              : setNewEvent({ ...newEvent, image_url: e.target.value })
-            }
-          />
-          <input
-            type="text"
-            placeholder="Registration Link"
-            value={editingEvent ? editingEvent.registration_link : newEvent.registration_link}
-            onChange={(e) => editingEvent 
-              ? setEditingEvent({ ...editingEvent, registration_link: e.target.value })
-              : setNewEvent({ ...newEvent, registration_link: e.target.value })
-            }
-          />
-        </div>
-        <textarea
-          placeholder="Description"
-          value={editingEvent ? editingEvent.description : newEvent.description}
-          onChange={(e) => editingEvent 
-            ? setEditingEvent({ ...editingEvent, description: e.target.value })
-            : setNewEvent({ ...newEvent, description: e.target.value })
-          }
-          rows="3"
+      {editingEvent ? (
+        <EventForm
+          event={editingEvent}
+          onSubmit={handleEditSubmit}
+          onCancel={() => setEditingEvent(null)}
+          isEditing={true}
         />
-        <div className="form-actions">
-          {editingEvent ? (
-            <>
-              <button onClick={handleUpdateEvent} className="primary-btn">
-                Update Event
-              </button>
-              <button onClick={() => setEditingEvent(null)} className="secondary-btn">
-                Cancel
-              </button>
-            </>
-          ) : (
-            <button onClick={handleCreateEvent} className="primary-btn">
-              Create Event
-            </button>
-          )}
-        </div>
-      </div>
+      ) : (
+        <EventForm
+          onSubmit={handleCreateSubmit}
+          isEditing={false}
+        />
+      )}
 
       <div className="items-grid">
         <h3>Existing Events</h3>
@@ -1888,70 +2006,35 @@ const EventsManagement = ({ events, newEvent, setNewEvent, handleCreateEvent,
 };
 
 // Announcements Management Component
-const AnnouncementsManagement = ({ announcements, newAnnouncement, setNewAnnouncement, 
-  handleCreateAnnouncement, editingAnnouncement, setEditingAnnouncement, 
-  handleUpdateAnnouncement, handleDeleteAnnouncement }) => {
+const AnnouncementsManagement = ({ announcements, handleCreateAnnouncement, handleUpdateAnnouncement, handleDeleteAnnouncement }) => {
+  const [editingAnnouncement, setEditingAnnouncement] = useState(null);
+
+  const handleEditSubmit = (formData) => {
+    handleUpdateAnnouncement({ ...editingAnnouncement, ...formData });
+    setEditingAnnouncement(null);
+  };
+
+  const handleCreateSubmit = (formData) => {
+    handleCreateAnnouncement(formData);
+  };
+
   return (
     <div className="management-section">
       <h2>Announcements Management</h2>
       
-      <div className="create-form">
-        <h3>{editingAnnouncement ? "Edit Announcement" : "Create New Announcement"}</h3>
-        <div className="form-grid">
-          <input
-            type="text"
-            placeholder="Title"
-            value={editingAnnouncement ? editingAnnouncement.title : newAnnouncement.title}
-            onChange={(e) => editingAnnouncement 
-              ? setEditingAnnouncement({ ...editingAnnouncement, title: e.target.value })
-              : setNewAnnouncement({ ...newAnnouncement, title: e.target.value })
-            }
-          />
-          <input
-            type="text"
-            placeholder="Image URL"
-            value={editingAnnouncement ? editingAnnouncement.image_url : newAnnouncement.image_url}
-            onChange={(e) => editingAnnouncement 
-              ? setEditingAnnouncement({ ...editingAnnouncement, image_url: e.target.value })
-              : setNewAnnouncement({ ...newAnnouncement, image_url: e.target.value })
-            }
-          />
-          <input
-            type="text"
-            placeholder="Link"
-            value={editingAnnouncement ? editingAnnouncement.link : newAnnouncement.link}
-            onChange={(e) => editingAnnouncement 
-              ? setEditingAnnouncement({ ...editingAnnouncement, link: e.target.value })
-              : setNewAnnouncement({ ...newAnnouncement, link: e.target.value })
-            }
-          />
-        </div>
-        <textarea
-          placeholder="Message"
-          value={editingAnnouncement ? editingAnnouncement.message : newAnnouncement.message}
-          onChange={(e) => editingAnnouncement 
-            ? setEditingAnnouncement({ ...editingAnnouncement, message: e.target.value })
-            : setNewAnnouncement({ ...newAnnouncement, message: e.target.value })
-          }
-          rows="3"
+      {editingAnnouncement ? (
+        <AnnouncementForm
+          announcement={editingAnnouncement}
+          onSubmit={handleEditSubmit}
+          onCancel={() => setEditingAnnouncement(null)}
+          isEditing={true}
         />
-        <div className="form-actions">
-          {editingAnnouncement ? (
-            <>
-              <button onClick={handleUpdateAnnouncement} className="primary-btn">
-                Update Announcement
-              </button>
-              <button onClick={() => setEditingAnnouncement(null)} className="secondary-btn">
-                Cancel
-              </button>
-            </>
-          ) : (
-            <button onClick={handleCreateAnnouncement} className="primary-btn">
-              Create Announcement
-            </button>
-          )}
-        </div>
-      </div>
+      ) : (
+        <AnnouncementForm
+          onSubmit={handleCreateSubmit}
+          isEditing={false}
+        />
+      )}
 
       <div className="items-grid">
         <h3>Existing Announcements</h3>
@@ -2048,35 +2131,12 @@ export default function AdminDashboard() {
   const [announcements, setAnnouncements] = useState([]);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [editingEvent, setEditingEvent] = useState(null);
-  const [editingAnnouncement, setEditingAnnouncement] = useState(null);
   const [editingClub, setEditingClub] = useState({
     name: "",
     logo_url: "",
     description: ""
   });
   const [showClubModal, setShowClubModal] = useState(false);
-
-  // Event state
-  const [newEvent, setNewEvent] = useState({
-    title: "",
-    description: "",
-    date: "",
-    time: "",
-    venue: "",
-    entry_fee: "",
-    prize_pool: "",
-    image_url: "",
-    registration_link: ""
-  });
-
-  // Announcement state
-  const [newAnnouncement, setNewAnnouncement] = useState({
-    title: "",
-    message: "",
-    image_url: "",
-    link: ""
-  });
 
   // Get logged in user + their club
   useEffect(() => {
@@ -2153,7 +2213,7 @@ export default function AdminDashboard() {
   };
 
   // Event CRUD operations
-  const handleCreateEvent = async () => {
+  const handleCreateEvent = async (eventData) => {
     if (!user || !clubId) {
       alert("User or club not found.");
       return;
@@ -2162,7 +2222,7 @@ export default function AdminDashboard() {
     setLoading(true);
     const { error } = await supabase.from("events").insert([
       {
-        ...newEvent,
+        ...eventData,
         created_by: user.id,
         club_id: clubId,
       },
@@ -2174,29 +2234,16 @@ export default function AdminDashboard() {
     } else {
       alert("✅ Event created successfully!");
       fetchEvents();
-      setNewEvent({
-        title: "",
-        description: "",
-        date: "",
-        time: "",
-        venue: "",
-        entry_fee: "",
-        prize_pool: "",
-        image_url: "",
-        registration_link: ""
-      });
     }
     setLoading(false);
   };
 
-  const handleUpdateEvent = async () => {
-    if (!editingEvent) return;
-
+  const handleUpdateEvent = async (eventData) => {
     setLoading(true);
     const { error } = await supabase
       .from("events")
-      .update(editingEvent)
-      .eq("id", editingEvent.id);
+      .update(eventData)
+      .eq("id", eventData.id);
 
     if (error) {
       console.error("Error updating event:", error.message);
@@ -2204,7 +2251,6 @@ export default function AdminDashboard() {
     } else {
       alert("✅ Event updated successfully!");
       fetchEvents();
-      setEditingEvent(null);
     }
     setLoading(false);
   };
@@ -2229,7 +2275,7 @@ export default function AdminDashboard() {
   };
 
   // Announcement CRUD operations
-  const handleCreateAnnouncement = async () => {
+  const handleCreateAnnouncement = async (announcementData) => {
     if (!user || !clubId) {
       alert("User or club not found.");
       return;
@@ -2238,7 +2284,7 @@ export default function AdminDashboard() {
     setLoading(true);
     const { error } = await supabase.from("announcements").insert([
       {
-        ...newAnnouncement,
+        ...announcementData,
         created_by: user.id,
         club_id: clubId,
       },
@@ -2250,24 +2296,16 @@ export default function AdminDashboard() {
     } else {
       alert("✅ Announcement created successfully!");
       fetchAnnouncements();
-      setNewAnnouncement({
-        title: "",
-        message: "",
-        image_url: "",
-        link: ""
-      });
     }
     setLoading(false);
   };
 
-  const handleUpdateAnnouncement = async () => {
-    if (!editingAnnouncement) return;
-
+  const handleUpdateAnnouncement = async (announcementData) => {
     setLoading(true);
     const { error } = await supabase
       .from("announcements")
-      .update(editingAnnouncement)
-      .eq("id", editingAnnouncement.id);
+      .update(announcementData)
+      .eq("id", announcementData.id);
 
     if (error) {
       console.error("Error updating announcement:", error.message);
@@ -2275,7 +2313,6 @@ export default function AdminDashboard() {
     } else {
       alert("✅ Announcement updated successfully!");
       fetchAnnouncements();
-      setEditingAnnouncement(null);
     }
     setLoading(false);
   };
@@ -2450,11 +2487,7 @@ export default function AdminDashboard() {
             {activeTab === "events" && (
               <EventsManagement
                 events={events}
-                newEvent={newEvent}
-                setNewEvent={setNewEvent}
                 handleCreateEvent={handleCreateEvent}
-                editingEvent={editingEvent}
-                setEditingEvent={setEditingEvent}
                 handleUpdateEvent={handleUpdateEvent}
                 handleDeleteEvent={handleDeleteEvent}
               />
@@ -2463,11 +2496,7 @@ export default function AdminDashboard() {
             {activeTab === "announcements" && (
               <AnnouncementsManagement
                 announcements={announcements}
-                newAnnouncement={newAnnouncement}
-                setNewAnnouncement={setNewAnnouncement}
                 handleCreateAnnouncement={handleCreateAnnouncement}
-                editingAnnouncement={editingAnnouncement}
-                setEditingAnnouncement={setEditingAnnouncement}
                 handleUpdateAnnouncement={handleUpdateAnnouncement}
                 handleDeleteAnnouncement={handleDeleteAnnouncement}
               />
