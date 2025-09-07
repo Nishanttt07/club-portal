@@ -33,7 +33,7 @@ export default function Login() {
         }
       }
 
-      // If profile doesn't exist → create default profile
+      // If profile doesn’t exist → create default profile
       if (!profile) {
         const { data: newProfile, error: insertError } = await supabase
           .from("profiles")
@@ -65,6 +65,7 @@ export default function Login() {
   const redirectUser = (profile) => {
     if (!profile) {
       console.warn("No profile found, staying on login page");
+      setLoading(false); // stop loading if no profile
       return;
     }
     if (profile.role === "admin") {
@@ -83,6 +84,7 @@ export default function Login() {
 
         if (error) {
           console.error("Error checking session:", error.message);
+          setLoading(false);
           return;
         }
 
@@ -90,30 +92,31 @@ export default function Login() {
           const profile = await ensureProfile(data.session.user);
           console.log("Loaded profile:", profile);
           redirectUser(profile);
+        } else {
+          setLoading(false); // no session → show login page
         }
       } catch (err) {
         console.error("Unexpected error in checkUser:", err);
-      } finally {
-        setLoading(false); // ✅ always stop loading
+        setLoading(false);
       }
     };
 
     checkUser();
 
     // ✅ Listen to auth state changes
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        console.log("Auth event:", _event, session);
-        if (session?.user) {
-          const profile = await ensureProfile(session.user);
-          redirectUser(profile);
-        }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      console.log("Auth event:", _event, session);
+      if (session?.user) {
+        const profile = await ensureProfile(session.user);
+        redirectUser(profile);
+      } else {
+        setLoading(false); // logged out
       }
-    );
+    });
 
-    return () => {
-      listener.subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   // ✅ Handle login via magic link
