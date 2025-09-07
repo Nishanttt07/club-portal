@@ -3,13 +3,20 @@
 /* General Styles */
 .admin-dashboard {
   min-height: 100vh;
-  background-color: #f5f7fa;
+  background-color: #f5f7f9;
 }
 
+.dashboard-content {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header Styles */
 .dashboard-header {
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 0.5rem 0;
+  padding: 1rem 0;
 }
 
 .header-content {
@@ -18,125 +25,92 @@
   align-items: center;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 2rem;
 }
 
 .header-left {
   display: flex;
   align-items: center;
+  gap: 2rem;
 }
 
 .logo h1 {
-  color: #4f46e5;
+  color: #2563eb;
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.8rem;
 }
 
 .logo span {
-  color: #6b7280;
+  color: #64748b;
   font-size: 0.9rem;
-  margin-left: 0.5rem;
 }
 
 .tabs {
   display: flex;
-  margin-left: 2rem;
+  gap: 0.5rem;
 }
 
 .tab-btn {
   padding: 0.5rem 1rem;
-  margin: 0 0.25rem;
-  background: none;
   border: none;
-  border-radius: 4px;
+  background: none;
   cursor: pointer;
-  color: #6b7280;
+  border-radius: 4px;
+  color: #64748b;
   font-weight: 500;
 }
 
 .tab-btn:hover {
-  background-color: #f3f4f6;
+  background-color: #f1f5f9;
 }
 
 .tab-btn.active {
-  color: #4f46e5;
-  background-color: #eef2ff;
+  background-color: #2563eb;
+  color: white;
 }
 
 .header-right {
   display: flex;
   align-items: center;
+  gap: 1rem;
 }
 
 .club-profile {
   display: flex;
   align-items: center;
-  margin-right: 1rem;
-  padding: 0.5rem;
-  border-radius: 4px;
+  gap: 0.5rem;
   cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
 }
 
 .club-profile:hover {
-  background-color: #f3f4f6;
+  background-color: #f1f5f9;
 }
 
 .club-logo {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  margin-right: 0.5rem;
   object-fit: cover;
 }
 
 .club-name {
   font-weight: 500;
-  color: #374151;
+  color: #334155;
 }
 
 .logout-btn {
+  padding: 0.5rem 1rem;
   background-color: #ef4444;
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
-  font-weight: 500;
 }
 
 .logout-btn:hover {
   background-color: #dc2626;
-}
-
-.dashboard-content {
-  max-width: 1200px;
-  margin: 1rem auto;
-  padding: 0 1rem;
-}
-
-.no-club-message {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 50vh;
-}
-
-.message-content {
-  text-align: center;
-  background-color: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.message-content h2 {
-  color: #374151;
-  margin-bottom: 1rem;
-}
-
-.message-content p {
-  color: #6b7280;
-  margin-bottom: 1.5rem;
 }
 
 /* Modal Styles */
@@ -148,8 +122,8 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   z-index: 1000;
 }
 
@@ -167,12 +141,12 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .modal-header h2 {
   margin: 0;
-  color: #374151;
+  color: #1e293b;
 }
 
 .close-btn {
@@ -180,11 +154,7 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #6b7280;
-}
-
-.close-btn:hover {
-  color: #374151;
+  color: #64748b;
 }
 
 .modal-body {
@@ -192,14 +162,14 @@
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: 500;
   color: #374151;
+  font-weight: 500;
 }
 
 .form-group input,
@@ -211,16 +181,11 @@
   font-size: 1rem;
 }
 
-.form-group textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
 .modal-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 2rem;
+  margin-top: 1.5rem;
 }
 
 .action-group {
@@ -228,38 +193,64 @@
   gap: 0.5rem;
 }
 
-/* Management Section Styles */
-.management-section {
-  background-color: white;
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  margin-bottom: 1.5rem;
+/* Button Styles */
+.primary-btn {
+  background-color: #2563eb;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
 }
 
-.management-section h2 {
-  color: #374151;
-  margin-top: 0;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e5e7eb;
+.primary-btn:hover {
+  background-color: #1d4ed8;
 }
 
+.secondary-btn {
+  background-color: #e2e8f0;
+  color: #475569;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.secondary-btn:hover {
+  background-color: #cbd5e1;
+}
+
+.delete-btn {
+  background-color: #ef4444;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background-color: #dc2626;
+}
+
+/* Form Styles */
 .create-form {
-  background-color: #f9fafb;
+  background-color: white;
   padding: 1.5rem;
   border-radius: 8px;
   margin-bottom: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .create-form h3 {
   margin-top: 0;
-  color: #374151;
+  color: #1e293b;
 }
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
   margin-bottom: 1rem;
 }
@@ -274,51 +265,19 @@
 .form-actions {
   display: flex;
   gap: 0.5rem;
+  margin-top: 1rem;
 }
 
-.primary-btn {
-  background-color: #4f46e5;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
+/* Card Styles */
+.management-section {
+  margin-bottom: 2rem;
 }
 
-.primary-btn:hover {
-  background-color: #4338ca;
+.management-section h2 {
+  color: #1e293b;
+  margin-bottom: 1.5rem;
 }
 
-.secondary-btn {
-  background-color: #e5e7eb;
-  color: #374151;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.secondary-btn:hover {
-  background-color: #d1d5db;
-}
-
-.delete-btn {
-  background-color: #ef4444;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.delete-btn:hover {
-  background-color: #dc2626;
-}
-
-/* Items Grid */
 .items-grid h3 {
   color: #374151;
   margin-bottom: 1rem;
@@ -334,17 +293,11 @@
   background-color: white;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .card-image {
-  height: 200px;
+  height: 160px;
   overflow: hidden;
 }
 
@@ -355,59 +308,53 @@
 }
 
 .card-content {
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
 .card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .card-header h4 {
-  margin: 0;
-  color: #374151;
-  font-size: 1.1rem;
+  margin: 0 0 0.25rem 0;
+  color: #1e293b;
 }
 
 .date {
-  color: #6b7280;
-  font-size: 0.9rem;
-  white-space: nowrap;
-  margin-left: 0.5rem;
+  color: #64748b;
+  font-size: 0.875rem;
 }
 
 .description {
-  color: #6b7280;
+  color: #475569;
   margin-bottom: 1rem;
+  line-height: 1.4;
 }
 
 .card-details {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .detail {
   display: flex;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .label {
   font-weight: 500;
   color: #374151;
-  margin-right: 0.5rem;
   min-width: 80px;
 }
 
 .value {
-  color: #6b7280;
+  color: #64748b;
 }
 
 .announcement-link {
-  color: #4f46e5;
+  color: #2563eb;
   text-decoration: none;
   display: inline-block;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .announcement-link:hover {
@@ -416,19 +363,20 @@
 
 .card-actions {
   display: flex;
-  justify-content: space-between;
+  gap: 0.5rem;
 }
 
 .edit-btn {
-  color: #4f46e5;
-  background: none;
+  background-color: #10b981;
+  color: white;
+  padding: 0.25rem 0.5rem;
   border: none;
+  border-radius: 4px;
   cursor: pointer;
-  font-weight: 500;
 }
 
 .edit-btn:hover {
-  text-decoration: underline;
+  background-color: #059669;
 }
 
 /* Table Styles */
@@ -436,16 +384,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.section-header h3 {
-  margin: 0;
-  color: #374151;
+  margin-bottom: 1rem;
 }
 
 .table-container {
-  overflow-x: auto;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .members-table {
@@ -457,53 +403,77 @@
 .members-table td {
   padding: 0.75rem 1rem;
   text-align: left;
-  border-bottom: 1px solid #e5e7eb;
+}
+
+.members-table thead {
+  background-color: #f8fafc;
 }
 
 .members-table th {
-  background-color: #f9fafb;
   color: #374151;
-  font-weight: 500;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.members-table tr:hover {
-  background-color: #f9fafb;
+.members-table td {
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.members-table tr:last-child td {
+  border-bottom: none;
 }
 
 .member-name {
   font-weight: 500;
-  color: #374151;
+  color: #1e293b;
 }
 
-/* Responsive Styles */
+/* No Club Message */
+.no-club-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+}
+
+.message-content {
+  text-align: center;
+  max-width: 500px;
+  padding: 2rem;
+}
+
+.message-content h2 {
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+.message-content p {
+  color: #64748b;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
   .header-content {
     flex-direction: column;
-    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .header-left {
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
   }
   
   .tabs {
-    margin-left: 0;
-    margin-top: 1rem;
-  }
-  
-  .header-right {
-    margin-top: 1rem;
     width: 100%;
-    justify-content: space-between;
-  }
-  
-  .form-grid {
-    grid-template-columns: 1fr;
+    justify-content: center;
   }
   
   .cards-container {
     grid-template-columns: 1fr;
-  }
-  
-  .modal-content {
-    width: 95%;
-    margin: 1rem;
   }
   
   .modal-actions {
@@ -513,6 +483,31 @@
   
   .action-group {
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-end;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-content {
+    padding: 1rem;
+  }
+  
+  .header-content {
+    padding: 0 1rem;
+  }
+  
+  .modal-content {
+    width: 95%;
+    margin: 1rem;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
   }
 }
