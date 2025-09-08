@@ -1,28 +1,28 @@
-/* UserDashboard.css - Enhanced Instagram-Style Design with New Color Scheme */
+/* UserDashboard.css - Enhanced Visibility Version */
 
 :root {
-  --primary: #6c5ce7;
-  --secondary: #8a3ffb;
-  --accent: #ff7eb3;
+  --primary: #6a11cb;
+  --secondary: #2575fc;
+  --accent: #ff6b6b;
   --success: #42dca3;
   --warning: #ffcc00;
-  --danger: #ff6b6b;
-  --dark: #1a1a2e;
-  --dark-card: #16213e;
-  --medium-dark: #1e2a4a;
-  --light: #e2e8f0;
-  --background: linear-gradient(135deg, #0f0c29 0%, #24243e 50%, #2c3e50 100%);
-  --card-bg: rgba(255, 255, 255, 0.08);
-  --card-bg-hover: rgba(255, 255, 255, 0.12);
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-tertiary: #94a3b8;
-  --shadow-sm: 0 2px 15px rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 5px 25px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 10px 35px rgba(0, 0, 0, 0.45);
+  --danger: #ff4757;
+  --dark: #2d3436;
+  --dark-card: #3a3f4b;
+  --medium-dark: #404857;
+  --light: #dfe6e9;
+  --background: linear-gradient(135deg, #2c3e50 0%, #4a69bd 100%);
+  --card-bg: rgba(255, 255, 255, 0.12);
+  --card-bg-hover: rgba(255, 255, 255, 0.18);
+  --text-primary: #f5f6fa;
+  --text-secondary: #dcdde1;
+  --text-tertiary: #a4b0be;
+  --shadow-sm: 0 2px 15px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 5px 25px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 35px rgba(0, 0, 0, 0.5);
   --border-radius: 16px;
   --transition: all 0.3s ease;
-  --card-border: 1px solid rgba(255, 255, 255, 0.1);
+  --card-border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 * {
@@ -47,10 +47,10 @@ body {
 
 /* Header Styles */
 .dashboard-header {
-  background: rgba(26, 26, 46, 0.8);
+  background: rgba(45, 52, 54, 0.85);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  color: white;
+  color: var(--text-primary);
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
@@ -59,7 +59,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .app-logo {
@@ -87,15 +87,15 @@ body {
 .search-bar {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 50px;
   padding: 0.5rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   transition: var(--transition);
 }
 
 .search-bar:focus-within {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.15);
   box-shadow: 0 0 0 2px var(--accent);
   border-color: transparent;
 }
@@ -104,14 +104,14 @@ body {
   flex: 1;
   background: transparent;
   border: none;
-  color: white;
+  color: var(--text-primary);
   font-size: 1rem;
   padding: 0.5rem;
   outline: none;
 }
 
 .search-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .clear-search-btn {
@@ -126,7 +126,7 @@ body {
 }
 
 .clear-search-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   color: var(--text-primary);
 }
 
@@ -137,9 +137,9 @@ body {
 }
 
 .ai-btn, .profile-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: white;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: var(--text-primary);
   padding: 0.6rem 1rem;
   border-radius: 50px;
   display: flex;
@@ -165,7 +165,7 @@ body {
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  color: white;
+  color: var(--text-primary);
 }
 
 /* Navigation Tabs */
@@ -204,7 +204,7 @@ body {
 
 .nav-tab:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .nav-tab.active {
@@ -265,7 +265,7 @@ body {
   display: flex;
   align-items: center;
   padding: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .club-info {
@@ -282,7 +282,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
@@ -334,8 +334,8 @@ body {
 }
 
 .detail {
-  background: rgba(108, 92, 231, 0.2);
-  color: var(--primary);
+  background: rgba(106, 17, 203, 0.25);
+  color: var(--text-primary);
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-size: 0.8rem;
@@ -382,7 +382,7 @@ body {
 .registration-btn, .announcement-link {
   display: inline-block;
   background: linear-gradient(135deg, var(--primary), var(--secondary));
-  color: white;
+  color: var(--text-primary);
   padding: 0.6rem 1.5rem;
   border-radius: 50px;
   text-decoration: none;
@@ -394,7 +394,7 @@ body {
 
 .registration-btn:hover, .announcement-link:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+  box-shadow: 0 5px 15px rgba(106, 17, 203, 0.4);
 }
 
 /* Empty State */
@@ -469,7 +469,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--text-primary);
   font-size: 1.5rem;
   font-weight: 600;
   border: 2px solid rgba(255, 255, 255, 0.2);
@@ -497,7 +497,7 @@ body {
 
 .join-btn {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
-  color: white;
+  color: var(--text-primary);
   border: none;
   padding: 0.6rem 1.5rem;
   border-radius: 50px;
@@ -508,7 +508,7 @@ body {
 
 .join-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+  box-shadow: 0 5px 15px rgba(106, 17, 203, 0.4);
 }
 
 .join-btn.joined {
@@ -527,7 +527,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(10, 10, 20, 0.8);
+  background: rgba(15, 15, 25, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -547,7 +547,7 @@ body {
   max-height: 90vh;
   overflow-y: auto;
   animation: slideUp 0.3s ease-out;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .modal-header {
@@ -555,7 +555,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .modal-header h2 {
@@ -581,7 +581,7 @@ body {
   transform: rotate(90deg);
 }
 
-/* Profile Modal - UPDATED TO MATCH FEED CARD STYLE */
+/* Profile Modal */
 .profile-content {
   padding: 1.5rem;
 }
@@ -601,7 +601,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--text-primary);
   font-size: 2rem;
   font-weight: 600;
   border: 2px solid rgba(255, 255, 255, 0.2);
@@ -622,7 +622,7 @@ body {
 
 .profile-tabs {
   display: flex;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   margin-bottom: 1.5rem;
 }
 
@@ -681,7 +681,7 @@ body {
   display: flex;
   align-items: center;
   padding: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .club-logo {
@@ -692,7 +692,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--text-primary);
   font-weight: 600;
   flex-shrink: 0;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -752,9 +752,9 @@ body {
 
 .leave-club-btn {
   width: 100%;
-  background: rgba(255, 107, 107, 0.15);
+  background: rgba(255, 71, 87, 0.2);
   color: var(--danger);
-  border: 1px solid rgba(255, 107, 107, 0.2);
+  border: 1px solid rgba(255, 71, 87, 0.3);
   padding: 0.5rem;
   border-radius: var(--border-radius);
   font-weight: 500;
@@ -766,13 +766,13 @@ body {
 
 .leave-club-btn:hover {
   background: var(--danger);
-  color: white;
+  color: var(--text-primary);
 }
 
 .logout-btn {
   width: 100%;
   background: var(--danger);
-  color: white;
+  color: var(--text-primary);
   border: none;
   padding: 0.8rem;
   border-radius: var(--border-radius);
@@ -794,11 +794,11 @@ body {
 }
 
 .ai-message {
-  background: rgba(108, 92, 231, 0.15);
+  background: rgba(106, 17, 203, 0.2);
   border-radius: var(--border-radius);
   padding: 1rem;
   margin-bottom: 1.5rem;
-  border: 1px solid rgba(108, 92, 231, 0.2);
+  border: 1px solid rgba(106, 17, 203, 0.3);
 }
 
 .message-content p {
@@ -807,11 +807,11 @@ body {
 }
 
 .ai-response {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: var(--border-radius);
   padding: 1rem;
   margin-bottom: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .ai-input-area {
@@ -821,8 +821,8 @@ body {
 
 .ai-input {
   flex: 1;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--border-radius);
   padding: 0.8rem 1rem;
   font-family: inherit;
@@ -834,13 +834,13 @@ body {
 .ai-input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.2);
-  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 2px rgba(106, 17, 203, 0.25);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .ai-send-btn {
   background: var(--primary);
-  color: white;
+  color: var(--text-primary);
   border: none;
   border-radius: var(--border-radius);
   padding: 0 1.5rem;
@@ -892,9 +892,9 @@ body {
 }
 
 .modal-btn.cancel {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
   color: var(--text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .modal-btn.cancel:hover {
@@ -903,7 +903,7 @@ body {
 
 .modal-btn.confirm {
   background: var(--danger);
-  color: white;
+  color: var(--text-primary);
 }
 
 .modal-btn.confirm:hover {
@@ -922,7 +922,7 @@ body {
 .loading-spinner {
   width: 50px;
   height: 50px;
-  border: 3px solid rgba(108, 92, 231, 0.3);
+  border: 3px solid rgba(106, 17, 203, 0.3);
   border-radius: 50%;
   border-top-color: var(--primary);
   animation: spin 1s ease-in-out infinite;
@@ -965,6 +965,7 @@ body {
   
   .feed {
     grid-template-columns: 1fr;
+    padding: 1rem;
   }
   
   .dashboard-nav {
@@ -997,27 +998,51 @@ body {
   .club-card-body {
     padding: 0.75rem;
   }
+  
+  .feed-image {
+    height: 250px;
+  }
 }
 
-/* UserDashboard.css - Additional styles for leave functionality */
-
-.leave-club-btn {
-  background-color: #ff4757;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  margin-top: 10px;
-  transition: background-color 0.2s;
-  width: 100%;
+@media (max-width: 480px) {
+  .dashboard-header {
+    padding: 0.75rem;
+  }
+  
+  .app-logo {
+    font-size: 1.5rem;
+  }
+  
+  .header-right {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .ai-btn, .profile-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .nav-tab {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .feed {
+    gap: 1rem;
+  }
+  
+  .explore-club-card {
+    padding: 1rem;
+  }
+  
+  .modal-content {
+    margin: 0.5rem;
+  }
 }
 
-.leave-club-btn:hover {
-  background-color: #ff3742;
-}
-
+/* Additional styles for leave functionality */
 .leave-confirmation {
   margin-top: 10px;
   text-align: center;
@@ -1026,6 +1051,7 @@ body {
 .leave-confirmation p {
   margin-bottom: 10px;
   font-weight: 500;
+  color: var(--text-primary);
 }
 
 .confirmation-buttons {
@@ -1035,8 +1061,8 @@ body {
 }
 
 .confirm-btn {
-  background-color: #ff4757;
-  color: white;
+  background-color: var(--danger);
+  color: var(--text-primary);
   border: none;
   padding: 6px 12px;
   border-radius: 4px;
@@ -1045,17 +1071,17 @@ body {
 }
 
 .confirm-btn:hover:not(:disabled) {
-  background-color: #ff3742;
+  background-color: #e05555;
 }
 
 .confirm-btn:disabled {
-  background-color: #ccc;
+  background-color: var(--text-tertiary);
   cursor: not-allowed;
 }
 
 .cancel-btn {
-  background-color: #f1f2f6;
-  color: #2f3542;
+  background-color: rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
   border: none;
   padding: 6px 12px;
   border-radius: 4px;
@@ -1064,103 +1090,5 @@ body {
 }
 
 .cancel-btn:hover {
-  background-color: #dfe4ea;
-}
-
-/* Profile modal styles */
-.profile-modal {
-  max-width: 800px;
-}
-
-.clubs-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.club-card-new {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.club-card-new:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
-
-.club-card-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.club-logo {
-  width: 50px;
-  height: 50px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 15px;
-  overflow: hidden;
-}
-
-.club-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.club-initials {
-  color: white;
-  font-weight: bold;
-  font-size: 20px;
-}
-
-.club-name {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0;
-}
-
-.club-description {
-  color: #64748b;
-  margin-bottom: 15px;
-  line-height: 1.5;
-}
-
-.club-meta {
-  display: flex;
-  gap: 15px;
-  font-size: 14px;
-  color: #94a3b8;
-}
-
-/* Loading states */
-.loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 20px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  background-color: rgba(255, 255, 255, 0.2);
 }
