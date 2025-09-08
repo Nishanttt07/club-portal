@@ -1,25 +1,16 @@
+// src/pages/Login.js
 import React, { useState, useEffect } from "react";
-import {
-  useSupabaseClient,
-  useUser,
-} from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient"; // ✅ make sure this file is set up
 import "./Login.css";
 
 export default function Login() {
-  const supabase = useSupabaseClient();
-  const user = useUser();
   const navigate = useNavigate();
-
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // Redirect URLs
-  const localRedirect = "http://localhost:3000/login";
-  const prodRedirect = "https://club-portal-blush.vercel.app/login";
-
-  // ✅ Ensure profile exists in DB
+  // Ensure profile exists
   const ensureProfile = async (user) => {
     try {
       const { data: profile, error } = await supabase
@@ -40,7 +31,7 @@ export default function Login() {
             {
               id: user.id,
               email: user.email,
-              role: "user",
+              role: "user", // default role
             },
           ])
           .select("role")
@@ -60,10 +51,10 @@ export default function Login() {
     }
   };
 
-  // ✅ Redirect user based on role
+  // Redirect based on role
   const redirectUser = (profile) => {
     if (!profile) {
-      console.warn("No profile found, staying on login page");
+      setMessage("⚠️ No profile found. Contact admin.");
       return;
     }
     if (profile.role === "admin") {
@@ -73,51 +64,44 @@ export default function Login() {
     }
   };
 
-  // ✅ Handle session + redirect after magic link
+  // Check if user already has a session (from magic link)
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession();
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-        if (error) console.error("Session error:", error.message);
-
-        if (session?.user) {
-          const profile = await ensureProfile(session.user);
-          redirectUser(profile);
-        }
-      } finally {
-        setLoading(false); // stop loading once checked
+      if (session?.user) {
+        const profile = await ensureProfile(session.user);
+        redirectUser(profile);
+      } else {
+        setLoading(false);
       }
     };
 
-    initAuth();
+    checkSession();
 
-    // Listen for auth state changes
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("Auth event:", event);
-        if (event === "SIGNED_IN" && session?.user) {
-          const profile = await ensureProfile(session.user);
-          redirectUser(profile);
-        }
+    // Listen for future auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const profile = await ensureProfile(session.user);
+        redirectUser(profile);
       }
-    );
+    });
 
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, [supabase]);
+    return () => subscription.unsubscribe();
+  }, []);
 
-  // ✅ Handle magic link login
-  const handleLogin = async (redirectUrl) => {
-    setMessage("Sending magic link...");
-
+  // Handle magic link login
+  const handleLogin = async () => {
+    setMessage(`Sending magic link to ${email}...`);
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: redirectUrl },
+      options: {
+        emailRedirectTo: "https://club-portal-blush.vercel.app", // ✅ must match Supabase redirect settings
+      },
     });
 
     if (error) {
@@ -141,59 +125,31 @@ export default function Login() {
       </header>
 
       <main className="login-container">
-        {!user ? (
-          <>
-            <h2 className="login-title">Login with Magic Link</h2>
-            <form
-              className="login-form"
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleLogin(prodRedirect);
-              }}
-            >
-              <input
-                type="email"
-                className="login-input"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <button type="submit" className="login-btn">
-                Send Magic Link
-              </button>
-            </form>
-
-            {/* Debug buttons */}
-            <div className="debug-buttons">
-              <button
-                className="login-btn"
-                onClick={() => handleLogin(localRedirect)}
-              >
-                Test Local Redirect
-              </button>
-              <button
-                className="login-btn"
-                onClick={() => handleLogin(prodRedirect)}
-              >
-                Test Prod Redirect
-              </button>
-            </div>
-
-            <p className="login-message">{message}</p>
-          </>
-        ) : (
-          <p className="loading-text">Redirecting...</p>
-        )}
+        <h2 className="login-title">Login with Magic Link</h2>
+        <form
+          className="login-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleLogin();
+          }}
+        >
+          <input
+            type="email"
+            className="login-input"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <button type="submit" className="login-btn">
+            Send Magic Link
+          </button>
+        </form>
+        <p className="login-message">{message}</p>
       </main>
 
       <footer className="login-footer">
         <p>© {new Date().getFullYear()} ClubHub. All rights reserved.</p>
-        <div className="footer-links">
-          <a href="#">Terms</a>
-          <a href="#">Privacy</a>
-          <a href="#">Help</a>
-        </div>
       </footer>
     </div>
   );
