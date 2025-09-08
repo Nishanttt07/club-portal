@@ -13,6 +13,7 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(true);
 
   // Redirect URLs
   const localRedirect = "http://localhost:3000/login";
@@ -39,7 +40,7 @@ export default function Login() {
             {
               id: user.id,
               email: user.email,
-              role: "user", // default role
+              role: "user",
             },
           ])
           .select("role")
@@ -74,44 +75,45 @@ export default function Login() {
 
   // ✅ Handle session + redirect after magic link
   useEffect(() => {
-    const handleSession = async () => {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
+    const initAuth = async () => {
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
 
-      if (error) {
-        console.error("Session error:", error.message);
-        return;
-      }
+        if (error) console.error("Session error:", error.message);
 
-      if (session?.user) {
-        const profile = await ensureProfile(session.user);
-        redirectUser(profile);
+        if (session?.user) {
+          const profile = await ensureProfile(session.user);
+          redirectUser(profile);
+        }
+      } finally {
+        setLoading(false); // stop loading once checked
       }
     };
 
-    handleSession();
+    initAuth();
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth event:", event);
-      if (event === "SIGNED_IN" && session?.user) {
-        const profile = await ensureProfile(session.user);
-        redirectUser(profile);
+    // Listen for auth state changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log("Auth event:", event);
+        if (event === "SIGNED_IN" && session?.user) {
+          const profile = await ensureProfile(session.user);
+          redirectUser(profile);
+        }
       }
-    });
+    );
 
     return () => {
-      subscription.unsubscribe();
+      authListener.subscription.unsubscribe();
     };
   }, [supabase]);
 
   // ✅ Handle magic link login
   const handleLogin = async (redirectUrl) => {
-    setMessage(`Sending magic link...`);
+    setMessage("Sending magic link...");
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
@@ -124,6 +126,10 @@ export default function Login() {
       setMessage("✅ Check your email for the login link!");
     }
   };
+
+  if (loading) {
+    return <p className="loading-text">Loading...</p>;
+  }
 
   return (
     <div className="login-page">
@@ -142,7 +148,7 @@ export default function Login() {
               className="login-form"
               onSubmit={(e) => {
                 e.preventDefault();
-                handleLogin(prodRedirect); // send prod link by default
+                handleLogin(prodRedirect);
               }}
             >
               <input
