@@ -4,7 +4,7 @@ import {
   useUser,
 } from "@supabase/auth-helpers-react";
 import { useNavigate } from "react-router-dom";
-import "./Login.css"; // your custom styles
+import "./Login.css";
 
 export default function Login() {
   const supabase = useSupabaseClient();
@@ -27,13 +27,9 @@ export default function Login() {
         .eq("id", user.id)
         .single();
 
-      if (error) {
-        if (error.code === "PGRST116") {
-          console.log("No profile found → creating one...");
-        } else {
-          console.error("Error fetching profile:", error.message);
-          return null;
-        }
+      if (error && error.code !== "PGRST116") {
+        console.error("Error fetching profile:", error.message);
+        return null;
       }
 
       if (!profile) {
@@ -76,27 +72,51 @@ export default function Login() {
     }
   };
 
-  // ✅ When user logs in, check profile + redirect
+  // ✅ Handle session + redirect after magic link
   useEffect(() => {
-    const checkProfile = async () => {
-      if (user) {
-        const profile = await ensureProfile(user);
+    const handleSession = async () => {
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+
+      if (error) {
+        console.error("Session error:", error.message);
+        return;
+      }
+
+      if (session?.user) {
+        const profile = await ensureProfile(session.user);
         redirectUser(profile);
       }
     };
-    checkProfile();
-  }, [user]);
+
+    handleSession();
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth event:", event);
+      if (event === "SIGNED_IN" && session?.user) {
+        const profile = await ensureProfile(session.user);
+        redirectUser(profile);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   // ✅ Handle magic link login
   const handleLogin = async (redirectUrl) => {
-    setMessage(`Sending magic link to ${redirectUrl}...`);
+    setMessage(`Sending magic link...`);
 
-    const { data, error } = await supabase.auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: redirectUrl },
     });
-
-    console.log("Supabase response:", { data, error, redirectUrl });
 
     if (error) {
       setMessage("❌ " + error.message);
@@ -122,7 +142,7 @@ export default function Login() {
               className="login-form"
               onSubmit={(e) => {
                 e.preventDefault();
-                handleLogin(prodRedirect); // default = production
+                handleLogin(prodRedirect); // send prod link by default
               }}
             >
               <input
@@ -134,7 +154,7 @@ export default function Login() {
                 required
               />
               <button type="submit" className="login-btn">
-                Send Magic Link (Production)
+                Send Magic Link
               </button>
             </form>
 
