@@ -14,11 +14,9 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
 
-  // Redirect URL for magic link
-  const redirectUrl =
-    process.env.NODE_ENV === "development"
-      ? "http://localhost:3000/login"
-      : "https://club-portal-blush.vercel.app/login";
+  // Redirect URLs
+  const localRedirect = "http://localhost:3000/login";
+  const prodRedirect = "https://club-portal-blush.vercel.app/login";
 
   // ✅ Ensure profile exists in DB
   const ensureProfile = async (user) => {
@@ -90,17 +88,18 @@ export default function Login() {
   }, [user]);
 
   // ✅ Handle magic link login
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setMessage("Sending magic link...");
+  const handleLogin = async (redirectUrl) => {
+    setMessage(`Sending magic link to ${redirectUrl}...`);
 
-    const { error } = await supabase.auth.signInWithOtp({
+    const { data, error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: redirectUrl },
     });
 
+    console.log("Supabase response:", { data, error, redirectUrl });
+
     if (error) {
-      setMessage(error.message);
+      setMessage("❌ " + error.message);
     } else {
       setMessage("✅ Check your email for the login link!");
     }
@@ -119,7 +118,13 @@ export default function Login() {
         {!user ? (
           <>
             <h2 className="login-title">Login with Magic Link</h2>
-            <form className="login-form" onSubmit={handleLogin}>
+            <form
+              className="login-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleLogin(prodRedirect); // default = production
+              }}
+            >
               <input
                 type="email"
                 className="login-input"
@@ -129,9 +134,26 @@ export default function Login() {
                 required
               />
               <button type="submit" className="login-btn">
-                Send Magic Link
+                Send Magic Link (Production)
               </button>
             </form>
+
+            {/* Debug buttons */}
+            <div className="debug-buttons">
+              <button
+                className="login-btn"
+                onClick={() => handleLogin(localRedirect)}
+              >
+                Test Local Redirect
+              </button>
+              <button
+                className="login-btn"
+                onClick={() => handleLogin(prodRedirect)}
+              >
+                Test Prod Redirect
+              </button>
+            </div>
+
             <p className="login-message">{message}</p>
           </>
         ) : (
